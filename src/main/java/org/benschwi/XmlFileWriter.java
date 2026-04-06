@@ -147,6 +147,9 @@ public class XmlFileWriter<T> {
 
     private Path getValidatedFilePath(String destinationPath, String fileName) {
         try {
+            if(destinationPath == null || destinationPath.isBlank() || fileName == null || fileName.isBlank()) {
+                throw new XMLFileWriterException("Validation of file values failed. The destination path and the name of the file must not be null");
+            }
             return Path.of(destinationPath).resolve(fileName + "." + FILE_EXTENSION_NAME);
         } catch (Exception e) {
             throw new XMLFileWriterException("Validation of file values failed. Could not set up the file path", e);
