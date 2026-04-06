@@ -71,13 +71,17 @@ public class XMLFileWriterTest {
         void testCreateAndWriteXmlFile() {
             Function<Dummy, Object> func1 = Dummy::name;
             Function<Dummy, Object> func2 = Dummy::age;
-            String[] tagNames = {"name", "age"};
-            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(tagNames, func1, func2);
+            Function<Dummy, Object> func3 = Dummy::isHealthy;
+            String[] tagNames = {"name", "age", "healthy"};
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(tagNames, func1, func2, func3);
 
             String expectedXMLDeclaration = "";
             String expectedRootElementName = "DummyCollection";
             String expectedElementName = "Dummy";
-            List<Dummy> dummyList = List.of(new Dummy("Dummy1", 18), new Dummy("Dummy2", 27));
+            List<Dummy> dummyList = List.of(
+                    new Dummy("Dummy1", 18, true),
+                    new Dummy("Dummy2", 27, false),
+                    new Dummy("Dummy4", 133, true));
 
             assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), "testFile", expectedRootElementName, dummyList));
 
@@ -86,15 +90,17 @@ public class XMLFileWriterTest {
 
     }
 
-    private static record Dummy(String name, Integer age) {}
+    private static record Dummy(String name, Integer age, boolean isHealthy) {}
 
     private static class Dummy1 {
         private final String name;
         private final Integer age;
+        private final Boolean isHealthy;
 
-        public Dummy1(String name, Integer age) {
+        public Dummy1(String name, Integer age, boolean isHealthy) {
             this.name = name;
             this.age = age;
+            this.isHealthy = isHealthy;
         }
 
         public String getName() {
@@ -103,6 +109,10 @@ public class XMLFileWriterTest {
 
         public Integer getAge() {
             return age;
+        }
+
+        public Boolean getHealthy() {
+            return isHealthy;
         }
     }
 
