@@ -201,4 +201,7 @@ public class XmlFileWriterTest {
     } // Dachte erst gut aber verfälscht das nicht Ergebnis der Tests, also in Bezug auf Schnelligkeit
     // und null values bei collections testen udn bei den isntanzen der collections selbst die Attributte, wei damit umgehen?
 
+    // schaue web fragen :)
+    // ist record hier missbraucht als Dummy oder genau richtig?
+
 }

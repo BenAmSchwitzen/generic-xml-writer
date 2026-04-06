@@ -15,7 +15,7 @@ import static org.benschwi.XmlFileConstants.*;
 
 /**
  * An XML file writer that works with generic values
- * @param <T> the type of object from which any attribute can be chosen to appear as an entry in the generated xml file
+ * @param <T> the type of object from which any attribute can be chosen to appear as an entry in the generated XML file
  */
 public class XmlFileWriter<T> {
 
