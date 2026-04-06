@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.*;
@@ -80,12 +81,32 @@ public class XMLFileWriterTest {
             String expectedElementName = "Dummy";
             List<Dummy> dummyList = List.of(
                     new Dummy("Dummy1", 18, true),
+                    null,
+                    new Dummy("Dummy4", 133, true));
+
+            assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), expectedRootElementName, dummyList));
+
+            // check noch ob file erstellt wurde am richtigen Ort mit richtigen Namen. eventuell werte rauslesen oder zeilen zähne die ich erweatre weiss ich ja vorher wenn ich values genau kenne wie hier
+        }
+
+        @Test
+        void testCreateAndWriteXmlFile_OneOfTheListElementsIsNull() {
+            Function<Dummy, Object> func1 = Dummy::name;
+            Function<Dummy, Object> func2 = Dummy::age;
+            Function<Dummy, Object> func3 = Dummy::isHealthy;
+            String[] tagNames = {"name", "age", "healthy"};
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(tagNames, func1, func2, func3);
+
+            String expectedXMLDeclaration = "";
+            String expectedRootElementName = "DummyCollection";
+            String expectedElementName = "Dummy";
+            List<Dummy> dummyList = List.of(
+                    new Dummy("Dummy1", 18, true),
                     new Dummy("Dummy2", 27, false),
                     new Dummy("Dummy4", 133, true));
 
-            assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), "testFile", expectedRootElementName, dummyList));
+            assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), expectedRootElementName, dummyList));
 
-            // check noch ob file erstellt wurde am richtigen Ort mit richtigen Namen. eventuell werte rauslesen oder zeilen zähne die ich erweatre weiss ich ja vorher wenn ich values genau kenne wie hier
         }
 
     }
@@ -115,5 +136,9 @@ public class XMLFileWriterTest {
             return isHealthy;
         }
     }
+
+    private static String getRandomFileName() {
+        return UUID.randomUUID().toString();
+    } // Dachte erst gut aber verfälscht das nicht Ergebnis der Tests, also in Bezug auf Schnelligkeit
 
 }
