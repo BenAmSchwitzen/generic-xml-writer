@@ -110,10 +110,11 @@ public class XmlFileWriter<T> {
 
             Function<T, Object> converterFunction = xmlFields[i];
             Object elementInstance = converterFunction.apply(xmlElement);
+            // hier null check
             if (elementInstance instanceof Collection<?> e) {
                 stb.append(getRecursiveCollectionEntryContent(e, 2, stb));
             } else {
-                stb.append(String.valueOf(elementInstance.toString()));
+                stb.append(String.valueOf(elementInstance));
             }
             stb.append(getEndTag(elementTag)).append("\n");
         }

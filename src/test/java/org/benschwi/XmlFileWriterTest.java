@@ -169,7 +169,7 @@ public class XmlFileWriterTest {
         }
 
     }
-
+    // hierfür auch record gut?
     private static record Dummy(String name, Integer age, boolean isHealthy) {}
 
     private static class Dummy1 {
