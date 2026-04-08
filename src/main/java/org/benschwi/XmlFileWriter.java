@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static org.benschwi.XmlFileConstants.*;
@@ -21,22 +22,18 @@ public class XmlFileWriter<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(XmlFileWriter.class);
 
-    private final String[] xmlFieldNames;
-    private final Function<T, Object>[] xmlFields;
+    private final XmlField<T>[] xmlFields;
 
     /**
      * The instance that represents an XML file writer with a predefined set of attributes from instances of type {@code T}
      *
      * @param xmlFields the fields whose values appear in each entry of the XML FILE
-     * @param xmlFieldNames the names of the fields defined in {@code xmlFields}
      */
     @SafeVarargs
-    public XmlFileWriter(final String[] xmlFieldNames, final Function<T, Object>...xmlFields) {
-        validateXmlFields(xmlFieldNames, xmlFields);
-        this.xmlFieldNames = xmlFieldNames;
-        this.xmlFields = xmlFields;
+    public XmlFileWriter(final XmlField<T>...xmlFields) {
+        this.xmlFields = getValidatedXmlFields(xmlFields);
         LOGGER.debug("Initialized XmlFileWriter instance");
-        LOGGER.debug("The predefined values are {}", Arrays.toString(xmlFieldNames));
+        LOGGER.debug("The predefined values are {}", Arrays.toString(xmlFields));
     }
 
     /**
@@ -82,6 +79,7 @@ public class XmlFileWriter<T> {
             }
 
             writer.write(getXMLEndContent(rootElementName));
+            LOGGER.debug("the creation of a new XML file was successful");
         } catch (IOException e) {
             throw new XMLFileWriterException("Could not write the xml file with predefined values", e);
         }
@@ -103,12 +101,12 @@ public class XmlFileWriter<T> {
     private String writeXmlElementContent(T xmlElement) {
         var stb = new StringBuilder();
 
-        for(int i = 0; i < xmlFields.length; i++) {
-            String elementTag = xmlFieldNames[i];
+        for(XmlField<T> xmlField : xmlFields) {
+            String elementTag = xmlField.name();
 
             stb.append(INDENTATION_LEVEL_2).append(getStartTag(elementTag));
 
-            Function<T, Object> converterFunction = xmlFields[i];
+            Function<T, Object> converterFunction = xmlField.valueExtractor();
             Object elementInstance = converterFunction.apply(xmlElement);
             // hier null check
             if (elementInstance instanceof Collection<?> e) {
@@ -122,16 +120,11 @@ public class XmlFileWriter<T> {
     }
 
     @SafeVarargs
-    private void validateXmlFields(final String[] xmlFieldNames, final Function<T, Object>... xmlFields) {
-        if(xmlFieldNames == null || xmlFieldNames.length < 1) {
-            throw new XMLFileWriterException("xmlFieldNames must not be null. The field names determine the text that appears in the element tags");
-        }
+    private XmlField<T>[] getValidatedXmlFields(final XmlField<T>...xmlFields) {
         if(xmlFields == null || xmlFields.length < 1) {
-            throw new XMLFileWriterException("xmlFields must not be null. The xml fields determine which values of the given type T appear in the generated file");
+            throw new XMLFileWriterException("xmlFields must not be null nor empty. The xml fields determine which values under which name of the given type T appear in the generated file");
         }
-        if(xmlFieldNames.length != xmlFields.length) {
-            throw new XMLFileWriterException("The size of xmlFieldNames and xmlFields must match to ensure a properly generated xml file");
-        }
+        return xmlFields;
     }
 
     private void validateCreationValues(String rootElementName, Collection<T> xmlElements)  {
@@ -198,7 +191,7 @@ public class XmlFileWriter<T> {
     }
 
     public static void main(String[] args) {
-        XmlFileWriter<Object> xmlFileWriter = new XmlFileWriter<>(new String[]{"1"}, Object::toString);
+        XmlFileWriter<Object> xmlFileWriter = new XmlFileWriter<>(new XmlField<>("Test", Object::toString));
         xmlFileWriter.writeAndCreateXMLFile(null, null, null, null);
     }
 
