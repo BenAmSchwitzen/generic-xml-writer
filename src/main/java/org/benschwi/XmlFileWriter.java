@@ -195,30 +195,10 @@ public class XmlFileWriter<T> {
         }
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private StringBuilder getRecursiveCollectionEntryContent(Collection<?> collection, int indentationLevel, StringBuilder stb) {
-        // rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
-        // mit isinstanceofCollection
-        // logge wenn nullk und dann wird einfach übersprungen
-        // zu viele StringBuilder Instanzen?
-        return null;
-    }
-
+    
     public static void main(String[] args) {
-        XmlFileWriter<Object> xmlFileWriter = new XmlFileWriter<>(new XmlField<>("Test", Object::toString));
-        xmlFileWriter.writeAndCreateXMLFile(null, null, null, null);
+        // logge wenn nullk und dann wird einfach übersprungen
+        // rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
     }
 
 }
