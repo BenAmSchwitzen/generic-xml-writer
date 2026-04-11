@@ -8,8 +8,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 
 import static org.assertj.core.api.Assertions.*;
@@ -19,7 +18,7 @@ public class XmlFileWriterTest {
     private static final Path DIR_PATH = Path.of("target").resolve("testFiles");
 
     private static record Dummy(String name, Integer age, boolean isHealthy) {}
-    private static record RecursiveFieldDummy(String name, List<String> listValues) {}
+    private static record RecursiveFieldDummy(String name, Collection<String> listValues) {}
 
     @BeforeAll
     static void setUp() {

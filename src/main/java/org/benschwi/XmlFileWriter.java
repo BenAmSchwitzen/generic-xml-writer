@@ -76,7 +76,13 @@ public class XmlFileWriter<T> {
             writer.write(getXMLStartContent(comment, rootElementName));
 
             for(T value : xmlElements) {
-                writer.write(getXmlElement(value));
+                if(value != null) {
+                    writer.write(getXmlElement(value));
+                    LOGGER.debug("Conversion of instance from type {} into an XML element was successful", value.getClass().getSimpleName());
+                } else {
+                    LOGGER.debug("Conversion of instance into an XML element was skipped. The instance was null");
+                }
+
             }
 
             writer.write(getXMLEndContent(rootElementName));
@@ -195,10 +201,10 @@ public class XmlFileWriter<T> {
         }
 
     }
-    
+
     public static void main(String[] args) {
-        // logge wenn nullk und dann wird einfach übersprungen
-        // rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
+        //TODO rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
+        //TODO alle intellij Problems anschauen
     }
 
 }
