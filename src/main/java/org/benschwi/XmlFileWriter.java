@@ -3,8 +3,11 @@ package org.benschwi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Struct;
@@ -48,7 +51,7 @@ public class XmlFileWriter<T> {
      * @throws XMLFileWriterException if one of the values is null or empty
      */
     public void writeAndCreateXMLFile(final String destinationPath, final String fileName, final String rootElementName, final Collection<T> xmlElements) {
-        writeAndCreateXMLFile(destinationPath, fileName, rootElementName, null, xmlElements);
+        writeAndCreateXMLFile(destinationPath, fileName, rootElementName, null, 8192, xmlElements);
     }
 
     /**
@@ -58,13 +61,15 @@ public class XmlFileWriter<T> {
      * @param fileName the name of the file to be created
      * @param rootElementName the name of the root element which appears at the top and bottom of the XML file
      * @param comment an optional comment that appears at the top of the XML file
+     * @param bufferSize the amount of bytes that the writer stores before writing to a file
      * @param xmlElements the entries of the XML file to be created
      *
      * @throws XMLFileWriterException if one of the values is null or empty
      */
-    public void writeAndCreateXMLFile(final String destinationPath, final String fileName, final String rootElementName, final String comment, final Collection<T> xmlElements) {
+    public void writeAndCreateXMLFile(final String destinationPath, final String fileName, final String rootElementName, final String comment, final int bufferSize, final Collection<T> xmlElements) {
         LOGGER.debug("Start the process of creating and writing a new xml file");
         validateCreationValues(rootElementName, xmlElements);
+        validateBufferSize(bufferSize);
         Path filePath = getValidatedFilePath(destinationPath, fileName);
         LOGGER.debug("The path of the new file : {}", destinationPath);
         LOGGER.debug("The name of the new file : {}", fileName);
@@ -72,7 +77,7 @@ public class XmlFileWriter<T> {
         LOGGER.debug("The comment of the file : {}", comment == null ? "No comment given" : comment);
         LOGGER.debug("The amount of instances to be converted into xml elements : {}", xmlElements.size());
 
-        try(Writer writer = Files.newBufferedWriter(filePath)) {
+        try(Writer writer = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(filePath), StandardCharsets.UTF_8), bufferSize)) {
             writer.write(getXMLStartContent(comment, rootElementName));
 
             for(T value : xmlElements) {
@@ -84,7 +89,6 @@ public class XmlFileWriter<T> {
                 }
 
             }
-
             writer.write(getXMLEndContent(rootElementName));
             LOGGER.debug("the creation of a new XML file was successful");
         } catch(Exception e) {
@@ -212,12 +216,22 @@ public class XmlFileWriter<T> {
 
     }
 
+    private void validateBufferSize(int bufferSize) {
+        if(bufferSize < 1) {
+            throw new XMLFileWriterException("The size of the buffer must be greater than 1");
+        }
+    }
+
     public static void main(String[] args) {
         //TODO rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
         //TODO alle intellij Problems anschauen
         // TODO : coverage tests
-
+        // TODO : Check mit AI, ob noch Felder fehlen
         //TODO : Add second method das statt file datei schriebt einfach nur XML Strign returned klönnte irgenwie flush deaktievren in BufferedfWriter, aber dann ist dtr noch systme clals glaube, will ja keine nsystme cll
+        // TODO : Lass bufferziszte übergeben stelle auf 1 und schaue dass es lange dauert :) cool
+        // TODO : Schaue was Files.newBufferedWriter(filePath) unter der Haube mmacht. Wahrscheinlich dass gleiche, was ich jketyrt machen werde oder im NOW gemacht  habe
+        // TODO : Buffersize testen standardfall und wenn er kleiner 1
+        // TODO : Fix build warnings
     }
 
 }

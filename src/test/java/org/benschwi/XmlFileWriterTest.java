@@ -172,6 +172,22 @@ public class XmlFileWriterTest {
         }
 
         @Test
+        void testCreateAndWriteXmlFile_bufferSizeIsLessThan1() {
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name),
+                    new XmlField<>("name", Dummy::age),
+                    new XmlField<>("name", Dummy::isHealthy)
+            );
+            List<Dummy> dummyList = List.of(
+                    new Dummy("Dummy1", 18, true),
+                    new Dummy("Dummy2", 27, false),
+                    new Dummy("Dummy4", 133, true));
+            int bufferSize = 0;
+
+            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "DummyCollection", "This is a comment", bufferSize, dummyList ));
+        }
+
+        @Test
         void testCreateAndWriteXmlFile_NullBehaviourIsTHROW_EXCEPTIONAndFunctionReturnsNull() {
             XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
                     new XmlField<>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION),
@@ -224,7 +240,6 @@ public class XmlFileWriterTest {
             assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), expectedFileName, "Dummy", recursiveFieldDummyList));
 
             assertThat(Files.notExists(DIR_PATH.resolve(expectedFileName + ".xml"))).isTrue();
-            // machen, dann wird er erst fehlschalgen udn dann korriegenre TDD
         }
 
         @Nested
