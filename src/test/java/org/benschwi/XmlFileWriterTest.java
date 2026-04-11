@@ -163,12 +163,68 @@ public class XmlFileWriterTest {
         void testCreateAndWriteXmlFile_elementCollectionIsEmpty() {
             XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
                     new XmlField<>("name", Dummy::name),
-                    new XmlField<>("name", Dummy::age),
-                    new XmlField<>("name", Dummy::isHealthy)
+                    new XmlField<>("age", Dummy::age),
+                    new XmlField<>("isHealthy", Dummy::isHealthy)
             );
             List<Dummy> dummyList = List.of();
 
             assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "DummyCollection", dummyList));
+        }
+
+        @Test
+        void testCreateAndWriteXmlFile_NullBehaviourIsTHROW_EXCEPTIONAndFunctionReturnsNull() {
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION),
+                    new XmlField<>("name", Dummy::age),
+                    new XmlField<>("name", Dummy::isHealthy)
+            );
+            List<Dummy> dummyList = List.of(
+                    new Dummy("Dummy1", 18, true),
+                    new Dummy(null, 27, false),
+                    new Dummy("Dummy4", 133, true));
+
+            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "Dummy", dummyList));
+        }
+
+        @Test
+        @DisplayName("This test proves that no file is created when the writing process throws an exception")
+        void testCreateAndWriteXmlFile_ThrownExceptionDuringWritingProcess() {
+            XmlFileWriter<RecursiveFieldDummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("iAmAListContainer", RecursiveFieldDummy::name, XmlField.NullBehavior.THROW_EXCEPTION),
+                    new XmlField<>("collection", RecursiveFieldDummy::listValues)
+            );
+            List<RecursiveFieldDummy> recursiveFieldDummyList = List.of(
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy(null, List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6"))
+            );
+            String expectedFileName = getRandomFileName();
+
+            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), expectedFileName, "Dummy", recursiveFieldDummyList));
+
+            assertThat(Files.notExists(DIR_PATH.resolve(expectedFileName + ".xml"))).isTrue();
+            // machen, dann wird er erst fehlschalgen udn dann korriegenre TDD
         }
 
         @Nested
