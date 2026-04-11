@@ -18,7 +18,9 @@ public class XmlFileWriterTest {
 
     private static final Path DIR_PATH = Path.of("target").resolve("testFiles");
 
-    // wie cleare ich aber beim nächsten Test automatisch die files
+    private static record Dummy(String name, Integer age, boolean isHealthy) {}
+    private static record RecursiveFieldDummy(String name, List<String> listValues) {}
+
     @BeforeAll
     static void setUp() {
         if(Files.notExists(DIR_PATH)) {
@@ -72,8 +74,6 @@ public class XmlFileWriterTest {
 
             assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), expectedFileName, expectedRootElementName, dummyList));
             assertThat(Files.exists(DIR_PATH.resolve(expectedFileName + ".xml"))).isTrue();
-            //eventuell werte rauslesen oder zeilen zählen die ich erweatre weiss ich ja vorher wenn ich values genau kenne wie hier
-            // und mock tests fehlen auch noch
         }
 
         @Test
@@ -167,49 +167,34 @@ public class XmlFileWriterTest {
                     new XmlField<>("name", Dummy::age),
                     new XmlField<>("name", Dummy::isHealthy)
             );
-
-            //<Dummy> dummyList = Collections.emptyList();
-            //List<Dummy> dummyList = List.of();
-            // which one is better
             List<Dummy> dummyList = List.of();
 
             assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "DummyCollection", dummyList));
         }
 
-    }
-    // hierfür auch record gut?
-    private static record Dummy(String name, Integer age, boolean isHealthy) {}
+        @Nested
+        class CreateXmlFileTests_recursion {
 
-    private static class Dummy1 {
-        private final String name;
-        private final Integer age;
-        private final Boolean isHealthy;
+            @Test
+            void testCreateAndWriteXmlFile_oneFieldHasCollectionType() {
+                XmlFileWriter<RecursiveFieldDummy> testInstance = new XmlFileWriter<>(
+                        new XmlField<>("iAmAListContainer", RecursiveFieldDummy::name),
+                        new XmlField<>("collection", RecursiveFieldDummy::listValues)
+                );
+                List<RecursiveFieldDummy> recursiveFieldDummyList = List.of(
+                        new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                        new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                        new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6"))
+                );
+                testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "RecursiveFieldDummyRoot", recursiveFieldDummyList);
+            }
 
-        public Dummy1(String name, Integer age, boolean isHealthy) {
-            this.name = name;
-            this.age = age;
-            this.isHealthy = isHealthy;
         }
 
-        public String getName() {
-            return name;
-        }
-
-        public Integer getAge() {
-            return age;
-        }
-
-        public Boolean getHealthy() {
-            return isHealthy;
-        }
     }
 
     private static String getRandomFileName() {
         return UUID.randomUUID().toString();
-    } // Dachte erst gut aber verfälscht das nicht Ergebnis der Tests, also in Bezug auf Schnelligkeit
-    // und null values bei collections testen udn bei den isntanzen der collections selbst die Attributte, wei damit umgehen?
-
-    // schaue web fragen :)
-    // ist record hier missbraucht als Dummy oder genau richtig?
+    }
 
 }
