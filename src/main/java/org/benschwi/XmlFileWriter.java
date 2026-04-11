@@ -87,7 +87,16 @@ public class XmlFileWriter<T> {
 
             writer.write(getXMLEndContent(rootElementName));
             LOGGER.debug("the creation of a new XML file was successful");
-        } catch (IOException e) {
+        } catch(Exception e) {
+            LOGGER.error("Writing process failed.");
+            LOGGER.error("Start the process of deleting a corrupted file if there is any");
+
+            try {
+                Files.deleteIfExists(filePath);
+                LOGGER.debug("Removal of file {} was successful", filePath);
+            } catch(IOException deleteEx) {
+                LOGGER.error("Could not delete corrupted file.", deleteEx);
+            }
             throw new XMLFileWriterException("Could not write the xml file with predefined values", e);
         }
 
@@ -122,9 +131,10 @@ public class XmlFileWriter<T> {
 
             stb.append(INDENTATION_LEVEL_2).append(getStartTag(elementTag));
 
+            if(rawValue == null && xmlField.nullBehavior() == XmlField.NullBehavior.THROW_EXCEPTION) {
+                throw new XMLFileWriterException("The writing process has failed. The extractor function for the tag with name " + xmlField.name() + " has generated a null value");
+            }
             stb.append(getFullElementConstruct(rawValue));
-
-            // hier normal value oder recurive
 
             stb.append(getEndTag(elementTag)).append("\n");
         }
@@ -205,6 +215,9 @@ public class XmlFileWriter<T> {
     public static void main(String[] args) {
         //TODO rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
         //TODO alle intellij Problems anschauen
+        // TODO : coverage tests
+
+        //TODO : Add second method das statt file datei schriebt einfach nur XML Strign returned klönnte irgenwie flush deaktievren in BufferedfWriter, aber dann ist dtr noch systme clals glaube, will ja keine nsystme cll
     }
 
 }
