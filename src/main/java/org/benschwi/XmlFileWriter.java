@@ -135,7 +135,7 @@ public class XmlFileWriter<T> {
         for(Object instance : collection) {
             // hier wieder if instace instanceofe collection und dann rekursiv
             stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(LIST_ITEM_TAG_NAME));
-            stb.append(String.valueOf(instance));
+            stb.append(getXmlElementContent(instance));
             stb.append(getEndTag(LIST_ITEM_TAG_NAME)).append("\n");
         }
         stb.append(indentationLevel);
@@ -143,7 +143,7 @@ public class XmlFileWriter<T> {
     }
 
     private String getXmlElementContent(Object rawValue) {
-        return String.valueOf(rawValue);
+        return rawValue != null ? rawValue.toString() : "";
     }
 
     private String getStartTag(String startTagName) {
