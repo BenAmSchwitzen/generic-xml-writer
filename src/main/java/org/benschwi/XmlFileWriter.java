@@ -226,7 +226,6 @@ public class XmlFileWriter<T> {
         //TODO rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
         //TODO alle intellij Problems anschauen
         // TODO : coverage tests
-        // TODO : Check mit AI, ob noch Felder fehlen
         //TODO : Add second method das statt file datei schriebt einfach nur XML Strign returned klönnte irgenwie flush deaktievren in BufferedfWriter, aber dann ist dtr noch systme clals glaube, will ja keine nsystme cll
         // TODO : Schaue was Files.newBufferedWriter(filePath) unter der Haube mmacht. Wahrscheinlich dass gleiche, was ich jketyrt machen werde oder im NOW gemacht  habe
         // TODO : Fix build warnings
@@ -234,19 +233,6 @@ public class XmlFileWriter<T> {
 
         // TODO : im catch Excpetion zu IoException und XMlFileWreiter exeption machen
         // TODO Das ist der wichtigste Punkt für Clean Code. Eine Methode sollte sich immer nur auf einer Ebene der Abstraktion bewegen.
-
-        // TODO : Wann static machen ? ah also emthoden die unabhöngig vopm objektzusatnd dinge produziert
-        //
-        //Die Hauptmethode (writeAndCreateXMLFile) erzählt die Geschichte WAS passiert: "Baue XML, speichere es, falls Fehler -> Lösche kaputte Datei."
-        //
-        //Die Hilfsmethode (deleteCorruptedFile) kümmert sich darum, WIE es passiert: "Versuche Files.deleteIfExists, fange die IOException, schreibe einen Log-Eintrag."
-        //Wenn du das "Wie" (das innere Try-Catch fürs Dateisystem) in der Hauptmethode lässt, zwingst du den Leser, sich mit unwichtigen Details zu beschäftigen, während er eigentlich nur den groben Ablauf verstehen will.
-
-        // Eine Methode sollte sich lesen wie ein gut geschriebener Zeitungsartikel (die sogenannte Step-down Rule). Oben steht die Überschrift und der grobe Ablauf. Je weiter man nach unten scrollt (in die Hilfsmethoden springt), desto technischer und detaillierter wird es.
-        //
-        //Du musst also nicht jeden Schritt auslagern. Du musst nur die Schritte auslagern, die dich plötzlich aus dem Lesefluss reißen, weil sie viel technischer sind als der Rest der Methode.
-
-       // Wenn du eine Methode schreibst und dir denkst: "Puh, dieser Block hier in der Mitte (z. B. eine komplexe if-Bedingung oder ein 5-zeiliger Schleifen-Inhalt) sieht irgendwie kryptisch aus. Ich schreib mal einen Kommentar drüber, damit man weiß, was das tut" – DANN markierst du diesen Block, drückst in IntelliJ auf Refactor > Extract Method und gibst der neuen Methode den Namen deines Kommentars.
     }
 
 }
