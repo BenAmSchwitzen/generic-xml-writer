@@ -10,11 +10,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Struct;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Objects;
-import java.util.function.Function;
 
 import static org.benschwi.XmlFileConstants.*;
 
@@ -178,7 +175,7 @@ public class XmlFileWriter<T> {
         return "</" + endTagName + ">";
     }
 
-    private String getXMLStartContent(String comment, String rootElementName)  {
+    private static String getXMLStartContent(String comment, String rootElementName)  {
         var stb = new StringBuilder();
         stb.append(XML_DECLARATION_TEXT).append("\n");
         if(comment != null && !comment.isBlank()) {
