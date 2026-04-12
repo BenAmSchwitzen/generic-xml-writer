@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.IntStream;
 
 
 import static org.assertj.core.api.Assertions.*;
@@ -240,6 +241,34 @@ public class XmlFileWriterTest {
             assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), expectedFileName, "Dummy", recursiveFieldDummyList));
 
             assertThat(Files.notExists(DIR_PATH.resolve(expectedFileName + ".xml"))).isTrue();
+        }
+
+        @RepeatedTest(1)
+        @DisplayName("This test method shows the impact of a small buffer size")
+        @Tag("slow")
+        void testCreateAndWriteXmlFile_SmallBufferSize() {
+            XmlFileWriter<RecursiveFieldDummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("iAmAListContainer", RecursiveFieldDummy::name, XmlField.NullBehavior.EMPTY_ELEMENT_VALUE),
+                    new XmlField<>("collection", RecursiveFieldDummy::listValues)
+            );
+
+            String expectedFileName = getRandomFileName();
+
+            int amountOfData = 1_000_000;
+            List<RecursiveFieldDummy> massiveList = IntStream.range(0, amountOfData)
+                    .mapToObj(i -> new RecursiveFieldDummy("Dummy" + i, List.of("item1", "item2", "item3")))
+                    .toList();
+
+            int bufferSize = 1;
+
+            testInstance.writeAndCreateXMLFile(
+                    String.valueOf(DIR_PATH),
+                    expectedFileName,
+                    "DummyRoot",
+                    "Performance Test",
+                    bufferSize,
+                    massiveList
+            );
         }
 
         @Nested
