@@ -228,9 +228,7 @@ public class XmlFileWriter<T> {
         // TODO : coverage tests
         // TODO : Check mit AI, ob noch Felder fehlen
         //TODO : Add second method das statt file datei schriebt einfach nur XML Strign returned klönnte irgenwie flush deaktievren in BufferedfWriter, aber dann ist dtr noch systme clals glaube, will ja keine nsystme cll
-        // TODO : Lass bufferziszte übergeben stelle auf 1 und schaue dass es lange dauert :) cool
         // TODO : Schaue was Files.newBufferedWriter(filePath) unter der Haube mmacht. Wahrscheinlich dass gleiche, was ich jketyrt machen werde oder im NOW gemacht  habe
-        // TODO : Buffersize testen standardfall und wenn er kleiner 1
         // TODO : Fix build warnings
     }
 
