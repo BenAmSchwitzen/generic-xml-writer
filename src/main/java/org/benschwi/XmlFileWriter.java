@@ -94,16 +94,20 @@ public class XmlFileWriter<T> {
         } catch(Exception e) {
             LOGGER.error("Writing process failed.");
             LOGGER.error("Start the process of deleting a corrupted file if there is any");
+            deleteCorruptedFile(filePath);
 
-            try {
-                Files.deleteIfExists(filePath);
-                LOGGER.debug("Removal of file {} was successful", filePath);
-            } catch(IOException deleteEx) {
-                LOGGER.error("Could not delete corrupted file.", deleteEx);
-            }
             throw new XMLFileWriterException("Could not write the xml file with predefined values", e);
         }
 
+    }
+
+    private static void deleteCorruptedFile(Path filePath) {
+        try {
+            Files.deleteIfExists(filePath);
+            LOGGER.debug("Removal of file {} was successful", filePath);
+        } catch(IOException deleteEx) {
+            LOGGER.error("Could not delete corrupted file.", deleteEx);
+        }
     }
 
     /**
@@ -138,14 +142,14 @@ public class XmlFileWriter<T> {
             if(rawValue == null && xmlField.nullBehavior() == XmlField.NullBehavior.THROW_EXCEPTION) {
                 throw new XMLFileWriterException("The writing process has failed. The extractor function for the tag with name " + xmlField.name() + " has generated a null value");
             }
-            stb.append(getFullElementConstruct(rawValue));
+            stb.append(getFullElementConstruct(rawValue, INDENTATION_LEVEL_2));
 
             stb.append(getEndTag(elementTag)).append("\n");
         }
         return stb.toString();
     }
 
-    private String getFullElementConstruct(Object rawValue) {
+    private String getFullElementConstruct(Object rawValue, String currentIndentation) {
         return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, INDENTATION_LEVEL_2) : getXmlElementContent(rawValue);
     }
 
@@ -155,22 +159,22 @@ public class XmlFileWriter<T> {
         for(Object instance : collection) {
             // hier wieder if instace instanceofe collection und dann rekursiv
             stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(LIST_ITEM_TAG_NAME));
-            stb.append(getXmlElementContent(instance));
+            stb.append(getFullElementConstruct(instance, indentationLevel + INDENTATION_LEVEL_1));
             stb.append(getEndTag(LIST_ITEM_TAG_NAME)).append("\n");
         }
         stb.append(indentationLevel);
         return stb.toString();
     }
 
-    private String getXmlElementContent(Object rawValue) {
+    private static String getXmlElementContent(Object rawValue) {
         return rawValue != null ? rawValue.toString() : "";
     }
 
-    private String getStartTag(String startTagName) {
+    private static String getStartTag(String startTagName) {
         return "<" + startTagName + ">";
     }
 
-    private String getEndTag(String endTagName) {
+    private static String getEndTag(String endTagName) {
         return "</" + endTagName + ">";
     }
 
@@ -184,7 +188,7 @@ public class XmlFileWriter<T> {
                 .toString();
     }
 
-    private String getXMLEndContent(String rootElementName) {
+    private static String getXMLEndContent(String rootElementName) {
         return "</" +
                 rootElementName +
                 ">";
@@ -204,7 +208,7 @@ public class XmlFileWriter<T> {
         }
     }
 
-    private Path getValidatedFilePath(String destinationPath, String fileName) {
+    private static Path getValidatedFilePath(String destinationPath, String fileName) {
         try {
             if(destinationPath == null || destinationPath.isBlank() || fileName == null || fileName.isBlank()) {
                 throw new XMLFileWriterException("Validation of file values failed. The destination path and the name of the file must not be null");
@@ -216,7 +220,7 @@ public class XmlFileWriter<T> {
 
     }
 
-    private void validateBufferSize(int bufferSize) {
+    private static void validateBufferSize(int bufferSize) {
         if(bufferSize < 1) {
             throw new XMLFileWriterException("The size of the buffer must be greater than 1");
         }
@@ -230,6 +234,23 @@ public class XmlFileWriter<T> {
         //TODO : Add second method das statt file datei schriebt einfach nur XML Strign returned klönnte irgenwie flush deaktievren in BufferedfWriter, aber dann ist dtr noch systme clals glaube, will ja keine nsystme cll
         // TODO : Schaue was Files.newBufferedWriter(filePath) unter der Haube mmacht. Wahrscheinlich dass gleiche, was ich jketyrt machen werde oder im NOW gemacht  habe
         // TODO : Fix build warnings
+        // TODO: Fix comment, wird falsch angezeigt
+
+        // TODO : im catch Excpetion zu IoException und XMlFileWreiter exeption machen
+        // TODO Das ist der wichtigste Punkt für Clean Code. Eine Methode sollte sich immer nur auf einer Ebene der Abstraktion bewegen.
+
+        // TODO : Wann static machen ? ah also emthoden die unabhöngig vopm objektzusatnd dinge produziert
+        //
+        //Die Hauptmethode (writeAndCreateXMLFile) erzählt die Geschichte WAS passiert: "Baue XML, speichere es, falls Fehler -> Lösche kaputte Datei."
+        //
+        //Die Hilfsmethode (deleteCorruptedFile) kümmert sich darum, WIE es passiert: "Versuche Files.deleteIfExists, fange die IOException, schreibe einen Log-Eintrag."
+        //Wenn du das "Wie" (das innere Try-Catch fürs Dateisystem) in der Hauptmethode lässt, zwingst du den Leser, sich mit unwichtigen Details zu beschäftigen, während er eigentlich nur den groben Ablauf verstehen will.
+
+        // Eine Methode sollte sich lesen wie ein gut geschriebener Zeitungsartikel (die sogenannte Step-down Rule). Oben steht die Überschrift und der grobe Ablauf. Je weiter man nach unten scrollt (in die Hilfsmethoden springt), desto technischer und detaillierter wird es.
+        //
+        //Du musst also nicht jeden Schritt auslagern. Du musst nur die Schritte auslagern, die dich plötzlich aus dem Lesefluss reißen, weil sie viel technischer sind als der Rest der Methode.
+
+       // Wenn du eine Methode schreibst und dir denkst: "Puh, dieser Block hier in der Mitte (z. B. eine komplexe if-Bedingung oder ein 5-zeiliger Schleifen-Inhalt) sieht irgendwie kryptisch aus. Ich schreib mal einen Kommentar drüber, damit man weiß, was das tut" – DANN markierst du diesen Block, drückst in IntelliJ auf Refactor > Extract Method und gibst der neuen Methode den Namen deines Kommentars.
     }
 
 }
