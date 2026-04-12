@@ -178,7 +178,7 @@ public class XmlFileWriter<T> {
         var stb = new StringBuilder();
         stb.append(XML_DECLARATION_TEXT).append("\n");
         if(comment != null && !comment.isBlank()) {
-            stb.append(formatAsXmlComment(comment)).append("\n");
+            stb.append(formatAsXmlComment(comment));
         }
         return stb.append("<").append(rootElementName).append(">\n")
                 .toString();
@@ -206,8 +206,7 @@ public class XmlFileWriter<T> {
         if(lastChar == '-') {
             stb.append(' ');
         }
-        stb.append(lastChar);
-        stb.append("-->");
+        stb.append(lastChar).append("-->").append("\n");
         return stb.toString();
     }
 
@@ -244,16 +243,11 @@ public class XmlFileWriter<T> {
     }
 
     public static void main(String[] args) {
-        //TODO rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
-        //TODO alle intellij Problems anschauen
+        //TODO recursion and recursion level
         // TODO : coverage tests
         //TODO : Add second method das statt file datei schriebt einfach nur XML Strign returned klönnte irgenwie flush deaktievren in BufferedfWriter, aber dann ist dtr noch systme clals glaube, will ja keine nsystme cll
         // TODO : Schaue was Files.newBufferedWriter(filePath) unter der Haube mmacht. Wahrscheinlich dass gleiche, was ich jketyrt machen werde oder im NOW gemacht  habe
         // TODO : Fix build warnings
-        // TODO: Fix comment, wird falsch angezeigt
-
-        // TODO : im catch Excpetion zu IoException und XMlFileWreiter exeption machen
-        // TODO Das ist der wichtigste Punkt für Clean Code. Eine Methode sollte sich immer nur auf einer Ebene der Abstraktion bewegen.
     }
 
 }
