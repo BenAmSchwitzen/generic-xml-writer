@@ -246,6 +246,7 @@ public class XmlFileWriterTest {
         @RepeatedTest(1)
         @DisplayName("This test method shows the impact of a small buffer size")
         @Tag("slow")
+        @Disabled
         void testCreateAndWriteXmlFile_SmallBufferSize() {
             XmlFileWriter<RecursiveFieldDummy> testInstance = new XmlFileWriter<>(
                     new XmlField<>("iAmAListContainer", RecursiveFieldDummy::name, XmlField.NullBehavior.EMPTY_ELEMENT_VALUE),

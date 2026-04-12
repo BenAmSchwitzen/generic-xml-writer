@@ -84,7 +84,6 @@ public class XmlFileWriter<T> {
                 } else {
                     LOGGER.debug("Conversion of instance into an XML element was skipped. The instance was null");
                 }
-
             }
             writer.write(getXMLEndContent(rootElementName));
             LOGGER.debug("the creation of a new XML file was successful");
@@ -147,7 +146,7 @@ public class XmlFileWriter<T> {
     }
 
     private String getFullElementConstruct(Object rawValue, String currentIndentation) {
-        return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, INDENTATION_LEVEL_2) : getXmlElementContent(rawValue);
+        return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, currentIndentation) : getXmlElementContent(rawValue);
     }
 
     private String getXmlListElementContent(Collection<?> collection, String indentationLevel) {
