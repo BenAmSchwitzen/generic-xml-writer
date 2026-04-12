@@ -178,7 +178,7 @@ public class XmlFileWriter<T> {
         var stb = new StringBuilder();
         stb.append(XML_DECLARATION_TEXT).append("\n");
         if(comment != null && !comment.isBlank()) {
-            stb.append(comment).append("\n");
+            stb.append(formatAsXmlComment(comment)).append("\n");
         }
         return stb.append("<").append(rootElementName).append(">\n")
                 .toString();
@@ -188,6 +188,27 @@ public class XmlFileWriter<T> {
         return "</" +
                 rootElementName +
                 ">";
+    }
+
+    private static String formatAsXmlComment(String comment) {
+        StringBuilder stb = new StringBuilder();
+        stb.append("<!--");
+
+        for (int i = 0; i < comment.length() - 1; i++) {
+            char currentChar = comment.charAt(i);
+            if(currentChar == '-' && stb.charAt(stb.length() - 1) == '-') {
+                stb.append(' ');
+            }
+            stb.append(currentChar);
+        }
+        char lastChar = comment.charAt(comment.length() - 1);
+
+        if(lastChar == '-') {
+            stb.append(' ');
+        }
+        stb.append(lastChar);
+        stb.append("-->");
+        return stb.toString();
     }
 
     @SafeVarargs

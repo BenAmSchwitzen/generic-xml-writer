@@ -5,7 +5,6 @@ package org.benschwi;
  */
 public final class XmlFileConstants {
 
-    static final String INDENTATION_LEVEL_0 = "";
     static final String INDENTATION_LEVEL_1 = "    ";
     static final String INDENTATION_LEVEL_2 = "        ";
 

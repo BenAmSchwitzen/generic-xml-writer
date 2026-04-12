@@ -72,7 +72,7 @@ public class XmlFileWriterTest {
                     new Dummy("Dummy2", 27, false),
                     new Dummy("Dummy4", 133, true));
 
-            assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), expectedFileName, expectedRootElementName, dummyList));
+            assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), expectedFileName, expectedRootElementName, "This is a test comment", 4096, dummyList));
             assertThat(Files.exists(DIR_PATH.resolve(expectedFileName + ".xml"))).isTrue();
         }
 
