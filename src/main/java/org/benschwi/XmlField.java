@@ -11,7 +11,7 @@ import java.util.function.Function;
  * @param valueExtractor a function that extracts content for this element from a source object of type {@code T}
  * @param <T> the type of the source object
  */
-public record XmlField<T>(String name, Function<T, Object> valueExtractor, NullBehavior nullBehavior) {
+public record XmlField<T>(String name, Function<T, Object> valueExtractor, NullBehavior nullBehavior, XmlField<?>... childFields) {
 
     public XmlField {
         Objects.requireNonNull(name, "The name must not be null");
@@ -19,8 +19,12 @@ public record XmlField<T>(String name, Function<T, Object> valueExtractor, NullB
         Objects.requireNonNull(nullBehavior,"nullBehavior must not be null. Use the other constructor where the default value for nullBehavior is EMPTY_ELEMENT_VALUE");
     }
 
-    public XmlField(String name, Function<T, Object> valueExtractor) {
-        this(name, valueExtractor, NullBehavior.EMPTY_ELEMENT_VALUE);
+    public XmlField(String name, Function<T, Object> valueExtractor, XmlField<?>... childFields) {
+        this(name, valueExtractor, NullBehavior.EMPTY_ELEMENT_VALUE, childFields);
+    }
+
+    public boolean hasChildFields() {
+        return childFields != null && childFields.length > 0;
     }
 
     /**

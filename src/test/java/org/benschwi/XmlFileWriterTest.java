@@ -20,6 +20,7 @@ public class XmlFileWriterTest {
 
     private static record Dummy(String name, Integer age, boolean isHealthy) {}
     private static record RecursiveFieldDummy(String name, Collection<String> listValues) {}
+    private static record RecursiveCollectionDummy(String name, Collection<Collection<Dummy>> listValues) {}
 
     @BeforeAll
     static void setUp() {
@@ -289,6 +290,19 @@ public class XmlFileWriterTest {
                 testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "RecursiveFieldDummyRoot", recursiveFieldDummyList);
             }
 
+            @Test
+            void testCreateAndWriteXmlFile_CollectionInCollection() {
+                XmlFileWriter<RecursiveCollectionDummy> testInstance = new XmlFileWriter<>(
+                        new XmlField<>("collectionContainer", RecursiveCollectionDummy::name),
+                        new XmlField<>("collection", RecursiveCollectionDummy::listValues)
+                );
+                List<RecursiveCollectionDummy> recursiveFieldDummyList = List.of(
+                        new RecursiveCollectionDummy("Dummy1", List.of(List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)), List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)))),
+                        new RecursiveCollectionDummy("Dummy2", List.of(List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)), List.of(new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true)))),
+                        new RecursiveCollectionDummy("Dummy2",  List.of(List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)), List.of(new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true))))
+                );
+                testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "RecursiveFieldDummyRoot", recursiveFieldDummyList);
+            }
         }
 
     }
