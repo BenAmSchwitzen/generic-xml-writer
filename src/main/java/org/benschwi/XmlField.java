@@ -9,6 +9,7 @@ import java.util.function.Function;
  *
  * @param name the tag name of the XML element
  * @param valueExtractor a function that extracts content for this element from a source object of type {@code T}
+ * @param nullBehavior a constant that defines behavior when the extraction of a value returns null
  * @param <T> the type of the source object
  */
 public record XmlField<T>(String name, Function<T, Object> valueExtractor, NullBehavior nullBehavior, XmlField<?>... childFields) {
