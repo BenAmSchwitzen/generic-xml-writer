@@ -8,8 +8,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.IntStream;
 
 
 import static org.assertj.core.api.Assertions.*;
@@ -19,7 +19,7 @@ public class XmlFileWriterTest {
     private static final Path DIR_PATH = Path.of("target").resolve("testFiles");
 
     private static record Dummy(String name, Integer age, boolean isHealthy) {}
-    private static record RecursiveFieldDummy(String name, List<String> listValues) {}
+    private static record RecursiveFieldDummy(String name, Collection<String> listValues) {}
 
     @BeforeAll
     static void setUp() {
@@ -72,7 +72,7 @@ public class XmlFileWriterTest {
                     new Dummy("Dummy2", 27, false),
                     new Dummy("Dummy4", 133, true));
 
-            assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), expectedFileName, expectedRootElementName, dummyList));
+            assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), expectedFileName, expectedRootElementName, "This is a test comment", 4096, dummyList));
             assertThat(Files.exists(DIR_PATH.resolve(expectedFileName + ".xml"))).isTrue();
         }
 
@@ -164,12 +164,112 @@ public class XmlFileWriterTest {
         void testCreateAndWriteXmlFile_elementCollectionIsEmpty() {
             XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
                     new XmlField<>("name", Dummy::name),
-                    new XmlField<>("name", Dummy::age),
-                    new XmlField<>("name", Dummy::isHealthy)
+                    new XmlField<>("age", Dummy::age),
+                    new XmlField<>("isHealthy", Dummy::isHealthy)
             );
             List<Dummy> dummyList = List.of();
 
             assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "DummyCollection", dummyList));
+        }
+
+        @Test
+        void testCreateAndWriteXmlFile_bufferSizeIsLessThan1() {
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name),
+                    new XmlField<>("name", Dummy::age),
+                    new XmlField<>("name", Dummy::isHealthy)
+            );
+            List<Dummy> dummyList = List.of(
+                    new Dummy("Dummy1", 18, true),
+                    new Dummy("Dummy2", 27, false),
+                    new Dummy("Dummy4", 133, true));
+            int bufferSize = 0;
+
+            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "DummyCollection", "This is a comment", bufferSize, dummyList ));
+        }
+
+        @Test
+        void testCreateAndWriteXmlFile_NullBehaviourIsTHROW_EXCEPTIONAndFunctionReturnsNull() {
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION),
+                    new XmlField<>("name", Dummy::age),
+                    new XmlField<>("name", Dummy::isHealthy)
+            );
+            List<Dummy> dummyList = List.of(
+                    new Dummy("Dummy1", 18, true),
+                    new Dummy(null, 27, false),
+                    new Dummy("Dummy4", 133, true));
+
+            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "Dummy", dummyList));
+        }
+
+        @Test
+        @DisplayName("This test proves that no file is created when the writing process throws an exception")
+        void testCreateAndWriteXmlFile_ThrownExceptionDuringWritingProcess() {
+            XmlFileWriter<RecursiveFieldDummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("iAmAListContainer", RecursiveFieldDummy::name, XmlField.NullBehavior.THROW_EXCEPTION),
+                    new XmlField<>("collection", RecursiveFieldDummy::listValues)
+            );
+            List<RecursiveFieldDummy> recursiveFieldDummyList = List.of(
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6")),
+                    new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
+                    new RecursiveFieldDummy(null, List.of("item1", "item2", "item3", "item4")),
+                    new RecursiveFieldDummy("Dummy2", List.of("item1", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6", "item2", "item3", "item4", "item5", "item6"))
+            );
+            String expectedFileName = getRandomFileName();
+
+            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), expectedFileName, "Dummy", recursiveFieldDummyList));
+
+            assertThat(Files.notExists(DIR_PATH.resolve(expectedFileName + ".xml"))).isTrue();
+        }
+
+        @RepeatedTest(1)
+        @DisplayName("This test method shows the impact of a small buffer size")
+        @Tag("slow")
+        @Disabled
+        void testCreateAndWriteXmlFile_SmallBufferSize() {
+            XmlFileWriter<RecursiveFieldDummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("iAmAListContainer", RecursiveFieldDummy::name, XmlField.NullBehavior.EMPTY_ELEMENT_VALUE),
+                    new XmlField<>("collection", RecursiveFieldDummy::listValues)
+            );
+
+            String expectedFileName = getRandomFileName();
+
+            int amountOfData = 1_000_000;
+            List<RecursiveFieldDummy> massiveList = IntStream.range(0, amountOfData)
+                    .mapToObj(i -> new RecursiveFieldDummy("Dummy" + i, List.of("item1", "item2", "item3")))
+                    .toList();
+
+            int bufferSize = 1;
+
+            testInstance.writeAndCreateXMLFile(
+                    String.valueOf(DIR_PATH),
+                    expectedFileName,
+                    "DummyRoot",
+                    "Performance Test",
+                    bufferSize,
+                    massiveList
+            );
         }
 
         @Nested

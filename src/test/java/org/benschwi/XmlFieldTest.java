@@ -23,5 +23,18 @@ public class XmlFieldTest {
         assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlField<Dummy>("name", null));
     }
 
+    @Test
+    void testCreateXmlField_NullBehaviorIsNull() {
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlField<Dummy>("name", Dummy::name, null));
+    }
+
+    @Test
+    void testCreateXmlField_EMPTY_ELEMENT_VALUE_IsTheStandardNullBehavior() {
+        XmlField<Dummy> xmlField = new XmlField<>("age", Dummy::age);
+        XmlField.NullBehavior expectedValue = XmlField.NullBehavior.EMPTY_ELEMENT_VALUE;
+
+        assertThat(xmlField.nullBehavior()).isEqualByComparingTo(expectedValue);
+    }
+
     private static record Dummy(String name, Integer age, boolean isHealthy) {}
 }

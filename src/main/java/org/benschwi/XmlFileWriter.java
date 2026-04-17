@@ -3,15 +3,15 @@ package org.benschwi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Struct;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Objects;
-import java.util.function.Function;
 
 import static org.benschwi.XmlFileConstants.*;
 
@@ -48,7 +48,7 @@ public class XmlFileWriter<T> {
      * @throws XMLFileWriterException if one of the values is null or empty
      */
     public void writeAndCreateXMLFile(final String destinationPath, final String fileName, final String rootElementName, final Collection<T> xmlElements) {
-        writeAndCreateXMLFile(destinationPath, fileName, rootElementName, null, xmlElements);
+        writeAndCreateXMLFile(destinationPath, fileName, rootElementName, null, 8192, xmlElements);
     }
 
     /**
@@ -58,13 +58,15 @@ public class XmlFileWriter<T> {
      * @param fileName the name of the file to be created
      * @param rootElementName the name of the root element which appears at the top and bottom of the XML file
      * @param comment an optional comment that appears at the top of the XML file
+     * @param bufferSize the amount of bytes that the writer stores before writing to a file
      * @param xmlElements the entries of the XML file to be created
      *
      * @throws XMLFileWriterException if one of the values is null or empty
      */
-    public void writeAndCreateXMLFile(final String destinationPath, final String fileName, final String rootElementName, final String comment, final Collection<T> xmlElements) {
+    public void writeAndCreateXMLFile(final String destinationPath, final String fileName, final String rootElementName, final String comment, final int bufferSize, final Collection<T> xmlElements) {
         LOGGER.debug("Start the process of creating and writing a new xml file");
         validateCreationValues(rootElementName, xmlElements);
+        validateBufferSize(bufferSize);
         Path filePath = getValidatedFilePath(destinationPath, fileName);
         LOGGER.debug("The path of the new file : {}", destinationPath);
         LOGGER.debug("The name of the new file : {}", fileName);
@@ -72,19 +74,36 @@ public class XmlFileWriter<T> {
         LOGGER.debug("The comment of the file : {}", comment == null ? "No comment given" : comment);
         LOGGER.debug("The amount of instances to be converted into xml elements : {}", xmlElements.size());
 
-        try(Writer writer = Files.newBufferedWriter(filePath)) {
+        try(Writer writer = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(filePath), StandardCharsets.UTF_8), bufferSize)) {
             writer.write(getXMLStartContent(comment, rootElementName));
 
             for(T value : xmlElements) {
-                writer.write(getXmlElement(value));
+                if(value != null) {
+                    writer.write(getXmlElement(value));
+                    LOGGER.debug("Conversion of instance from type {} into an XML element was successful", value.getClass().getSimpleName());
+                } else {
+                    LOGGER.debug("Conversion of instance into an XML element was skipped. The instance was null");
+                }
             }
-
             writer.write(getXMLEndContent(rootElementName));
             LOGGER.debug("the creation of a new XML file was successful");
-        } catch (IOException e) {
+        } catch(Exception e) {
+            LOGGER.error("Writing process failed.");
+            LOGGER.error("Start the process of deleting a corrupted file if there is any");
+            deleteCorruptedFile(filePath);
+
             throw new XMLFileWriterException("Could not write the xml file with predefined values", e);
         }
 
+    }
+
+    private static void deleteCorruptedFile(Path filePath) {
+        try {
+            Files.deleteIfExists(filePath);
+            LOGGER.debug("Removal of file {} was successful", filePath);
+        } catch(IOException deleteEx) {
+            LOGGER.error("Could not delete corrupted file.", deleteEx);
+        }
     }
 
     /**
@@ -116,17 +135,18 @@ public class XmlFileWriter<T> {
 
             stb.append(INDENTATION_LEVEL_2).append(getStartTag(elementTag));
 
-            stb.append(getFullElementConstruct(rawValue));
-
-            // hier normal value oder recurive
+            if(rawValue == null && xmlField.nullBehavior() == XmlField.NullBehavior.THROW_EXCEPTION) {
+                throw new XMLFileWriterException("The writing process has failed. The extractor function for the tag with name " + xmlField.name() + " has generated a null value");
+            }
+            stb.append(getFullElementConstruct(rawValue, INDENTATION_LEVEL_2));
 
             stb.append(getEndTag(elementTag)).append("\n");
         }
         return stb.toString();
     }
 
-    private String getFullElementConstruct(Object rawValue) {
-        return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, INDENTATION_LEVEL_2) : getXmlElementContent(rawValue);
+    private String getFullElementConstruct(Object rawValue, String currentIndentation) {
+        return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, currentIndentation) : getXmlElementContent(rawValue);
     }
 
     private String getXmlListElementContent(Collection<?> collection, String indentationLevel) {
@@ -135,39 +155,59 @@ public class XmlFileWriter<T> {
         for(Object instance : collection) {
             // hier wieder if instace instanceofe collection und dann rekursiv
             stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(LIST_ITEM_TAG_NAME));
-            stb.append(getXmlElementContent(instance));
+            stb.append(getFullElementConstruct(instance, indentationLevel + INDENTATION_LEVEL_1));
             stb.append(getEndTag(LIST_ITEM_TAG_NAME)).append("\n");
         }
         stb.append(indentationLevel);
         return stb.toString();
     }
 
-    private String getXmlElementContent(Object rawValue) {
+    private static String getXmlElementContent(Object rawValue) {
         return rawValue != null ? rawValue.toString() : "";
     }
 
-    private String getStartTag(String startTagName) {
+    private static String getStartTag(String startTagName) {
         return "<" + startTagName + ">";
     }
 
-    private String getEndTag(String endTagName) {
+    private static String getEndTag(String endTagName) {
         return "</" + endTagName + ">";
     }
 
-    private String getXMLStartContent(String comment, String rootElementName)  {
+    private static String getXMLStartContent(String comment, String rootElementName)  {
         var stb = new StringBuilder();
         stb.append(XML_DECLARATION_TEXT).append("\n");
         if(comment != null && !comment.isBlank()) {
-            stb.append(comment).append("\n");
+            stb.append(formatAsXmlComment(comment));
         }
         return stb.append("<").append(rootElementName).append(">\n")
                 .toString();
     }
 
-    private String getXMLEndContent(String rootElementName) {
+    private static String getXMLEndContent(String rootElementName) {
         return "</" +
                 rootElementName +
                 ">";
+    }
+
+    private static String formatAsXmlComment(String comment) {
+        StringBuilder stb = new StringBuilder();
+        stb.append("<!--");
+
+        for (int i = 0; i < comment.length() - 1; i++) {
+            char currentChar = comment.charAt(i);
+            if(currentChar == '-' && stb.charAt(stb.length() - 1) == '-') {
+                stb.append(' ');
+            }
+            stb.append(currentChar);
+        }
+        char lastChar = comment.charAt(comment.length() - 1);
+
+        if(lastChar == '-') {
+            stb.append(' ');
+        }
+        stb.append(lastChar).append("-->").append("\n");
+        return stb.toString();
     }
 
     @SafeVarargs
@@ -184,7 +224,7 @@ public class XmlFileWriter<T> {
         }
     }
 
-    private Path getValidatedFilePath(String destinationPath, String fileName) {
+    private static Path getValidatedFilePath(String destinationPath, String fileName) {
         try {
             if(destinationPath == null || destinationPath.isBlank() || fileName == null || fileName.isBlank()) {
                 throw new XMLFileWriterException("Validation of file values failed. The destination path and the name of the file must not be null");
@@ -196,29 +236,18 @@ public class XmlFileWriter<T> {
 
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-    private StringBuilder getRecursiveCollectionEntryContent(Collection<?> collection, int indentationLevel, StringBuilder stb) {
-        // rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
-        // mit isinstanceofCollection
-        // logge wenn nullk und dann wird einfach übersprungen
-        // zu viele StringBuilder Instanzen?
-        return null;
+    private static void validateBufferSize(int bufferSize) {
+        if(bufferSize < 1) {
+            throw new XMLFileWriterException("The size of the buffer must be greater than 1");
+        }
     }
 
     public static void main(String[] args) {
-        XmlFileWriter<Object> xmlFileWriter = new XmlFileWriter<>(new XmlField<>("Test", Object::toString));
-        xmlFileWriter.writeAndCreateXMLFile(null, null, null, null);
+        //TODO recursion and recursion level
+        // TODO : coverage tests
+        //TODO : Add second method das statt file datei schriebt einfach nur XML Strign returned klönnte irgenwie flush deaktievren in BufferedfWriter, aber dann ist dtr noch systme clals glaube, will ja keine nsystme cll
+        // TODO : Schaue was Files.newBufferedWriter(filePath) unter der Haube mmacht. Wahrscheinlich dass gleiche, was ich jketyrt machen werde oder im NOW gemacht  habe
+        // TODO : Fix build warnings
     }
 
 }

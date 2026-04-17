@@ -11,16 +11,24 @@ import java.util.function.Function;
  * @param valueExtractor a function that extracts content for this element from a source object of type {@code T}
  * @param <T> the type of the source object
  */
-public record XmlField<T>(String name, Function<T, Object> valueExtractor) {
+public record XmlField<T>(String name, Function<T, Object> valueExtractor, NullBehavior nullBehavior) {
 
     public XmlField {
         Objects.requireNonNull(name, "The name must not be null");
         Objects.requireNonNull(valueExtractor, "The extractor function must not be null.");
+        Objects.requireNonNull(nullBehavior,"nullBehavior must not be null. Use the other constructor where the default value for nullBehavior is EMPTY_ELEMENT_VALUE");
+    }
 
-        // und im writer wird standardmöässig toString() für converision genutzt. als default gut, vlltr kann nutzer aber auch selberr fangeben welche methode verrwdnent wird.
-        // sie muss nur allerdrings auch einen String returnen
+    public XmlField(String name, Function<T, Object> valueExtractor) {
+        this(name, valueExtractor, NullBehavior.EMPTY_ELEMENT_VALUE);
+    }
 
-        // Ob name empty sein darf kann man später per extra Parameter angeben klnnen, eventuell OptionsEnum
+    /**
+     * The constant describes what should happen if the generated value from the valueExtractor function returns null
+     */
+    public enum NullBehavior {
+        EMPTY_ELEMENT_VALUE,
+        THROW_EXCEPTION
     }
 
 }
