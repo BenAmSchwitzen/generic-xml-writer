@@ -8,10 +8,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
+
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -36,32 +35,20 @@ public class XmlFileWriterTest {
 
         @Test
         void testCreateXmlFileWriter() {
-            Function<Dummy, Object> func1 = Dummy::name;
-            Function<Dummy, Object> func2 = Dummy::age; // hier auslagern nach oben defineiren in class weil will schauen ob deshalb so lange. wäre es mit reflection langsamer
-            String[] tagNames = {"name", "age"};
+            XmlField<Dummy> xmlField1 = new XmlField<>("name", Dummy::name);
+            XmlField<Dummy> xmlField2 = new XmlField<>("age", Dummy::age);
 
-            assertThatNoException().isThrownBy(() -> new XmlFileWriter<Dummy>(tagNames, func1, func2));
-        }
-
-        @Test
-        void testCreateXmlFileWriter_xmlFieldNamesIsNull() {
-            Function<Dummy, Object> func1 = Dummy::name;
-            Function<Dummy, Object> func2 = Dummy::age;
-
-            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> new XmlFileWriter<Dummy>(null, func1, func2));
+            assertThatNoException().isThrownBy(() -> new XmlFileWriter<>(xmlField1, xmlField2));
         }
 
         @Test
         void testCreateXmlFileWriter_xmlFieldsIsNull() {
-            String[] tagNames = {"name", "age"};
-            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> new XmlFileWriter<Dummy>(tagNames));
+           assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> new XmlFileWriter<Dummy>(null));
         }
 
         @Test
-        void testCreateXmlFileWriter_xmlFieldNamesAndXmlFieldsSizeMismatch() {
-            Function<Dummy, Object> func1 = Dummy::name;
-            String[] tagNames = {"name", "age"};
-            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> new XmlFileWriter<Dummy>(tagNames));
+        void testCreateXmlFileWriter_xmlFieldsIsEmpty() {
+            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(XmlFileWriter<Dummy>::new);
         }
 
     }
@@ -71,25 +58,32 @@ public class XmlFileWriterTest {
 
         @Test
         void testCreateAndWriteXmlFile() {
-            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(new String[]{"name", "age", "healthy"},
-                    Dummy::name, Dummy::age, Dummy::isHealthy);
-            String expectedXMLDeclaration = "";
+            String expectedFileName = getRandomFileName();
             String expectedRootElementName = "DummyCollection";
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name),
+                    new XmlField<>("age", Dummy::age),
+                    new XmlField<>("healthy", Dummy::isHealthy)
+            );
             List<Dummy> dummyList = List.of(
                     new Dummy("Dummy1", 18, true),
                     new Dummy("Dummy2", 27, false),
                     new Dummy("Dummy4", 133, true));
 
-            assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), expectedRootElementName, dummyList));
-
-            // check noch ob file erstellt wurde am richtigen Ort mit richtigen Namen. eventuell werte rauslesen oder zeilen zähne die ich erweatre weiss ich ja vorher wenn ich values genau kenne wie hier
+            assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), expectedFileName, expectedRootElementName, dummyList));
+            assertThat(Files.exists(DIR_PATH.resolve(expectedFileName + ".xml"))).isTrue();
+            //eventuell werte rauslesen oder zeilen zählen die ich erweatre weiss ich ja vorher wenn ich values genau kenne wie hier
+            // und mock tests fehlen auch noch
         }
 
         @Test
         @Disabled("Null values muss ich mich noch drum kümmern. Sowohl bei den Collection instances selbst, als auch bei deren attribute values, muss noch überllegt werden")
         void testCreateAndWriteXmlFile_OneOfTheListElementsIsNull() {
-            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(new String[]{"name", "age", "healthy"},
-                    Dummy::name, Dummy::age, Dummy::isHealthy);
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name),
+                    new XmlField<>("name", Dummy::age),
+                    new XmlField<>("name", Dummy::isHealthy)
+            );
             String expectedXMLDeclaration = "";
             String expectedRootElementName = "DummyCollection";
             List<Dummy> dummyList = List.of(
@@ -105,8 +99,11 @@ public class XmlFileWriterTest {
         @NullSource
         @ValueSource(strings = {" ", "    ", "     "})
         void testCreateAndWriteXmlFile_destinationPathIsInvalid(String destinationPath) {
-            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(new String[]{"name", "age", "healthy"},
-                    Dummy::name, Dummy::age, Dummy::isHealthy);
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name),
+                    new XmlField<>("name", Dummy::age),
+                    new XmlField<>("name", Dummy::isHealthy)
+            );
             List<Dummy> dummyList = List.of(
                     new Dummy("Dummy1", 18, true),
                     new Dummy("Dummy2", 27, false),
@@ -119,9 +116,11 @@ public class XmlFileWriterTest {
         @NullSource
         @ValueSource(strings = {" ", "    ", "     "})
         void testCreateAndWriteXmlFile_fileNameIsInvalid(String fileName) {
-            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(new String[]{"name", "age", "healthy"},
-                    Dummy::name, Dummy::age, Dummy::isHealthy);
-
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name),
+                    new XmlField<>("name", Dummy::age),
+                    new XmlField<>("name", Dummy::isHealthy)
+            );
             List<Dummy> dummyList = List.of(
                     new Dummy("Dummy1", 18, true),
                     new Dummy("Dummy2", 27, false),
@@ -134,8 +133,11 @@ public class XmlFileWriterTest {
         @NullSource
         @ValueSource(strings = {" ", "    ", "     "})
         void testCreateAndWriteXmlFile_rootElementNameIsInvalid(String rootElementName) {
-            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(new String[]{"name", "age", "healthy"},
-                    Dummy::name, Dummy::age, Dummy::isHealthy);
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name),
+                    new XmlField<>("name", Dummy::age),
+                    new XmlField<>("name", Dummy::isHealthy)
+            );
 
             List<Dummy> dummyList = List.of(
                     new Dummy("Dummy1", 18, true),
@@ -147,8 +149,11 @@ public class XmlFileWriterTest {
 
         @Test
         void testCreateAndWriteXmlFile_elementCollectionIsNull() {
-            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(new String[]{"name", "age", "healthy"},
-                    Dummy::name, Dummy::age, Dummy::isHealthy);
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name),
+                    new XmlField<>("name", Dummy::age),
+                    new XmlField<>("name", Dummy::isHealthy)
+            );
 
             List<Dummy> dummyList = null;
 
@@ -157,8 +162,11 @@ public class XmlFileWriterTest {
 
         @Test
         void testCreateAndWriteXmlFile_elementCollectionIsEmpty() {
-            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(new String[]{"name", "age", "healthy"},
-                    Dummy::name, Dummy::age, Dummy::isHealthy);
+            XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
+                    new XmlField<>("name", Dummy::name),
+                    new XmlField<>("name", Dummy::age),
+                    new XmlField<>("name", Dummy::isHealthy)
+            );
 
             //<Dummy> dummyList = Collections.emptyList();
             //List<Dummy> dummyList = List.of();
@@ -169,7 +177,7 @@ public class XmlFileWriterTest {
         }
 
     }
-
+    // hierfür auch record gut?
     private static record Dummy(String name, Integer age, boolean isHealthy) {}
 
     private static class Dummy1 {
