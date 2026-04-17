@@ -4,11 +4,12 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * This field represents a tag name in combination with a corresponding function that generates a proper value to the given name
+ * This class represents a mapping between an XML tag name and a function that extracts its corresponding value from a source object.
+ * The mapping forms an XML element.
  *
- * @param name the name of an XML tag
- * @param valueExtractor the function
- * @param <T>
+ * @param name the tag name of the XML element
+ * @param valueExtractor a function that extracts content for this element from a source object of type {@code T}
+ * @param <T> the type of the source object
  */
 public record XmlField<T>(String name, Function<T, Object> valueExtractor) {
 

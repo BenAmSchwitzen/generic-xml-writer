@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Struct;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -75,7 +76,7 @@ public class XmlFileWriter<T> {
             writer.write(getXMLStartContent(comment, rootElementName));
 
             for(T value : xmlElements) {
-                writer.write(getXMLElement(value));
+                writer.write(getXmlElement(value));
             }
 
             writer.write(getXMLEndContent(rootElementName));
@@ -86,37 +87,87 @@ public class XmlFileWriter<T> {
 
     }
 
-    private String getXMLElement(T xmlElement)  {
+    /**
+     * Get the text representation of {@code xmlElement} with all its child elements and properties being included
+     *
+     * @param xmlElement the XML element to represent as text
+     * @return a text representation of {@code xmlElement}
+     */
+    private String getXmlElement(T xmlElement)  {
         String xmlElementName = xmlElement.getClass().getSimpleName();
-        var stb = new StringBuilder();
 
-        stb.append(INDENTATION_LEVEL_1).append(getStartTag(xmlElementName)).append("\n");
-        stb.append(writeXmlElementContent(xmlElement));
-        stb.append(INDENTATION_LEVEL_1).append(getEndTag(xmlElementName)).append("\n");
-
-        return stb.toString();
-
+        return INDENTATION_LEVEL_1 + getStartTag(xmlElementName) + "\n"
+                + buildXmlElement(xmlElement) +
+                INDENTATION_LEVEL_1 + getEndTag(xmlElementName) + "\n";
     }
 
-    private String writeXmlElementContent(T xmlElement) {
+    /**
+     * Build the text representation of the body of {@code xmlElement}
+     *
+     * @param xmlElement the element to be represented
+     * @return the text body of {@code xmlElement}
+     */
+    private String buildXmlElement(T xmlElement) {
         var stb = new StringBuilder();
 
         for(XmlField<T> xmlField : xmlFields) {
             String elementTag = xmlField.name();
+            Object rawValue = xmlField.valueExtractor().apply(xmlElement);
 
             stb.append(INDENTATION_LEVEL_2).append(getStartTag(elementTag));
 
-            Function<T, Object> converterFunction = xmlField.valueExtractor();
-            Object elementInstance = converterFunction.apply(xmlElement);
-            // hier null check
-            if (elementInstance instanceof Collection<?> e) {
-                stb.append(getRecursiveCollectionEntryContent(e, 2, stb));
-            } else {
-                stb.append(String.valueOf(elementInstance));
-            }
+            stb.append(getFullElementConstruct(rawValue));
+
+            // hier normal value oder recurive
+
             stb.append(getEndTag(elementTag)).append("\n");
         }
         return stb.toString();
+    }
+
+    private String getFullElementConstruct(Object rawValue) {
+        return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, INDENTATION_LEVEL_2) : getXmlElementContent(rawValue);
+    }
+
+    private String getXmlListElementContent(Collection<?> collection, String indentationLevel) {
+        StringBuilder stb = new StringBuilder();
+
+        for(Object instance : collection) {
+            // hier wieder if instace instanceofe collection und dann rekursiv
+            stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(LIST_ITEM_TAG_NAME));
+            stb.append(getXmlElementContent(instance));
+            stb.append(getEndTag(LIST_ITEM_TAG_NAME)).append("\n");
+        }
+        stb.append(indentationLevel);
+        return stb.toString();
+    }
+
+    private String getXmlElementContent(Object rawValue) {
+        return rawValue != null ? rawValue.toString() : "";
+    }
+
+    private String getStartTag(String startTagName) {
+        return "<" + startTagName + ">";
+    }
+
+    private String getEndTag(String endTagName) {
+        return "</" + endTagName + ">";
+    }
+
+    private String getXMLStartContent(String comment, String rootElementName)  {
+        var stb = new StringBuilder();
+        stb.append(XML_DECLARATION_TEXT).append("\n");
+        if(comment != null && !comment.isBlank()) {
+            stb.append(comment).append("\n");
+        }
+        return stb.append("<").append(rootElementName).append(">\n")
+                .toString();
+    }
+
+    private String getXMLEndContent(String rootElementName) {
+        return "</" +
+                rootElementName +
+                ">";
     }
 
     @SafeVarargs
@@ -145,31 +196,6 @@ public class XmlFileWriter<T> {
 
     }
 
-    private String getStartTag(String startTagName) {
-        return "<" + startTagName + ">";
-    }
-
-    private String getEndTag(String endTagName) {
-        return "</" + endTagName + ">";
-    }
-
-    private String getXMLStartContent(String comment, String rootElementName)  {
-        var stb = new StringBuilder();
-        stb.append(XML_DECLARATION_TEXT).append("\n");
-        if(comment != null && !comment.isBlank()) {
-            stb.append(comment).append("\n");
-        }
-        return stb.append("<").append(rootElementName).append(">\n")
-                .toString();
-    }
-
-    private String getXMLEndContent(String rootElementName) {
-        return new StringBuilder()
-                .append("</")
-                .append(rootElementName)
-                .append(">")
-                .toString();
-    }
 
 
 

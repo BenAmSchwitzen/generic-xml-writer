@@ -5,10 +5,6 @@ package org.benschwi;
  */
 public final class XmlFileConstants {
 
-    // Why not protected ? protected ist nur im selberm package und unterklassen
-    // durrch final calss gibt es keine unterklassenm
-    // und kein keyword heisst nur im selben package (package private)
-
     static final String INDENTATION_LEVEL_0 = "";
     static final String INDENTATION_LEVEL_1 = "    ";
     static final String INDENTATION_LEVEL_2 = "        ";
@@ -16,7 +12,8 @@ public final class XmlFileConstants {
     static final String FILE_EXTENSION_NAME = "xml";
     static final String XML_DECLARATION_TEXT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-    private XmlFileConstants() {}
+    static final String LIST_ITEM_TAG_NAME = "item";
 
+    private XmlFileConstants() {}
 
 }
