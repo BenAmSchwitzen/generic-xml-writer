@@ -15,7 +15,7 @@ import static org.benschwi.XmlFileConstants.*;
 
 /**
  * An XML file writer that works with generic values
- * @param <T> the type of object from which any attribute can be chosen to appear as an entry in the generated xml file
+ * @param <T> the type of object from which any attribute can be chosen to appear as an entry in the generated XML file
  */
 public class XmlFileWriter<T> {
 
@@ -79,9 +79,6 @@ public class XmlFileWriter<T> {
 
             for(T value : xmlElements) {
                 writer.write(getXMLElement(value));
-                // rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
-                // mit isinstanceofCollection
-
             }
 
             writer.write(getXMLEndContent(rootElementName));
@@ -94,14 +91,11 @@ public class XmlFileWriter<T> {
     private String getXMLElement(T xmlElement)  {
         String xmlElementName = xmlElement.getClass().getSimpleName();
         var stb = new StringBuilder();
+
         stb.append(INDENTATION_LEVEL_1).append(getStartTag(xmlElementName)).append("\n");
-
-        // hier rekursiv und adden
         stb.append(writeXmlElementContent(xmlElement));
-
         stb.append(INDENTATION_LEVEL_1).append(getEndTag(xmlElementName)).append("\n");
 
-        // logge wenn nullk und dann wird einfach übersprungen
         return stb.toString();
 
     }
@@ -147,6 +141,9 @@ public class XmlFileWriter<T> {
 
     private Path getValidatedFilePath(String destinationPath, String fileName) {
         try {
+            if(destinationPath == null || destinationPath.isBlank() || fileName == null || fileName.isBlank()) {
+                throw new XMLFileWriterException("Validation of file values failed. The destination path and the name of the file must not be null");
+            }
             return Path.of(destinationPath).resolve(fileName + "." + FILE_EXTENSION_NAME);
         } catch (Exception e) {
             throw new XMLFileWriterException("Validation of file values failed. Could not set up the file path", e);
@@ -192,12 +189,15 @@ public class XmlFileWriter<T> {
 
 
     private StringBuilder getRecursiveCollectionEntryContent(Collection<?> collection, int indentationLevel, StringBuilder stb) {
-
+        // rekurion und dann vllt noch setLevel methpde anbieten die standardmössi2 zwei ist dann wird heit einfach so liste gerpintted
+        // mit isinstanceofCollection
+        // logge wenn nullk und dann wird einfach übersprungen
+        // zu viele StringBuilder Instanzen?
         return null;
     }
 
     public static void main(String[] args) {
-        XmlFileWriter<Object> xmlFileWriter = new XmlFileWriter<>(new String[]{"1"},  o -> o.toString());
+        XmlFileWriter<Object> xmlFileWriter = new XmlFileWriter<>(new String[]{"1"}, Object::toString);
         xmlFileWriter.writeAndCreateXMLFile(null, null, null, null);
     }
 
