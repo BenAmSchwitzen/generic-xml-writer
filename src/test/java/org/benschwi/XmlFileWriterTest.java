@@ -21,6 +21,7 @@ public class XmlFileWriterTest {
     private static record Dummy(String name, Integer age, boolean isHealthy) {}
     private static record RecursiveFieldDummy(String name, Collection<String> listValues) {}
     private static record RecursiveCollectionDummy(String name, Collection<Collection<Dummy>> listValues) {}
+    private static record DummyRec(String name, Dummy dummy){}
 
     @BeforeAll
     static void setUp() {
@@ -303,6 +304,17 @@ public class XmlFileWriterTest {
                 );
                 testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "RecursiveFieldDummyRoot", recursiveFieldDummyList);
             }
+        }
+
+        @Nested
+        class createXmlFileTests_childFields {
+
+            @Test
+            void testCreateXmlFile_OneFieldHasChildFields() {
+                XmlField<DummyRec> dummyRec = new XmlField<>("name", DummyRec::name, new XmlField<>("name", Dummy::isHealthy));
+                // ...
+            }
+
         }
 
     }

@@ -13,15 +13,18 @@ import java.util.function.Function;
  * @param childFields array of XML fields. It represents child element mappings. If the array is empty, the XML element is a leaf element. If the array contains at least one field, the XML element is a parent element.
  * @param <T> the type of the source object
  */
-public record XmlField<T>(String name, Function<T, Object> valueExtractor, NullBehavior nullBehavior, XmlField<?>... childFields) {
-
+public record XmlField<T>(String name, Function<T, Object> valueExtractor, NullBehavior nullBehavior, XmlField<?>...childFields) {
+    // Human h ; Adresse, Computer computer
+    // for(Function f : fields) {
+    // 1. f.apply(h) = adresse -> in chieldfields definiert wie dargestellt oder wenn nicht dann einfach toString();
+    // 2. f.apply(h) = Computer -> in chieldfields definiert wie dargestellt oder wenn nicht dann einfach toString();
     public XmlField {
         Objects.requireNonNull(name, "The name must not be null");
         Objects.requireNonNull(valueExtractor, "The extractor function must not be null.");
         Objects.requireNonNull(nullBehavior,"nullBehavior must not be null. Use the other constructor where the default value for nullBehavior is EMPTY_ELEMENT_VALUE");
     }
 
-    public XmlField(String name, Function<T, Object> valueExtractor, XmlField<?>... childFields) {
+    public XmlField(String name, Function<T, Object> valueExtractor, XmlField<?>...childFields) {
         this(name, valueExtractor, NullBehavior.EMPTY_ELEMENT_VALUE, childFields);
     }
 

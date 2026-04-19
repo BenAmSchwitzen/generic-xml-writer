@@ -162,19 +162,15 @@ public class XmlFileWriter<T> {
         return stb.toString();
     }
 
-    private static String getXmlElementContent(Object rawValue) {
-//        if(rawValue == null) {
-//            return "";
-//        }
+    private String getXmlElementContent(Object rawValue) {
         return rawValue != null ? rawValue.toString() : "";
-        //
-        //return rawValue != null ? rawValue.toString() : "";
-        // hier muss ich irgenwie noch an das xmlelement selbst rankommen. eventuell statt rawValue einfach xmlField übergeben
+
     }
 
-    private static String getChildFieldsElementContent() {
-        // xmlField zb returned Human,  childFields name, age, usw
-        return null;
+    private String getChildFieldsContentOfElement() {
+        // xmlfield.hasChildFields() check
+        //
+        return "null";
     }
 
     @SafeVarargs
