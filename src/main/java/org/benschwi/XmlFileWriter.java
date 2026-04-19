@@ -242,18 +242,4 @@ public class XmlFileWriter<T> {
         }
     }
 
-    public static void main(String[] args) {
-        //TODO recursion and recursion level
-        // TODO : coverage tests
-        //TODO : Add second method das statt file datei schriebt einfach nur XML Strign returned klönnte irgenwie flush deaktievren in BufferedfWriter, aber dann ist dtr noch systme clals glaube, will ja keine nsystme cll
-        // TODO : Schaue was Files.newBufferedWriter(filePath) unter der Haube mmacht. Wahrscheinlich dass gleiche, was ich jketyrt machen werde oder im NOW gemacht  habe
-        // TODO : Fix build warnings
-
-        // TODO: Das  worum es hier in diesem Branch geht verstehen
-        // TODO: saveargs versthen
-
-        // TODO : xmlField class design
-        // TODO : to github
-    }
-
 }
