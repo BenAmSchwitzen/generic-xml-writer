@@ -29,6 +29,17 @@ public class XmlFieldTest {
     }
 
     @Test
+    void testCreateXmlField_childFieldsIsNull() {
+        assertThatNoException().isThrownBy(() -> new XmlField<Dummy>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION, null));
+    }
+
+    @Test
+    void testCreateXmlField_childFieldsIsEmpty() {
+        XmlField[] emptyArray = new XmlField[3];
+        assertThatNoException().isThrownBy(() -> new XmlField<Dummy>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION, emptyArray));
+    }
+
+    @Test
     void testCreateXmlField_EMPTY_ELEMENT_VALUE_IsTheStandardNullBehavior() {
         XmlField<Dummy> xmlField = new XmlField<>("age", Dummy::age);
         XmlField.NullBehavior expectedValue = XmlField.NullBehavior.EMPTY_ELEMENT_VALUE;
