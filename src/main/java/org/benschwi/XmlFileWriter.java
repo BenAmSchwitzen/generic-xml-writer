@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import static org.benschwi.XmlFileConstants.*;
+import static org.benschwi.XmlUtil.*;
 
 /**
  * An XML file writer that works with generic values
@@ -117,7 +118,7 @@ public class XmlFileWriter<T> {
 
         return INDENTATION_LEVEL_1 + getStartTag(xmlElementName) + "\n"
                 + buildXmlElement(xmlElement) +
-                INDENTATION_LEVEL_1 + getEndTag(xmlElementName) + "\n";
+                INDENTATION_LEVEL_1 + getEndTag(xmlElementName);
     }
 
     /**
@@ -140,7 +141,7 @@ public class XmlFileWriter<T> {
             }
             stb.append(getFullElementConstruct(rawValue, INDENTATION_LEVEL_2));
 
-            stb.append(getEndTag(elementTag)).append("\n");
+            stb.append(getEndTag(elementTag));
         }
         return stb.toString();
     }
@@ -153,61 +154,27 @@ public class XmlFileWriter<T> {
         StringBuilder stb = new StringBuilder();
 
         for(Object instance : collection) {
-            // hier wieder if instace instanceofe collection und dann rekursiv
             stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(LIST_ITEM_TAG_NAME));
             stb.append(getFullElementConstruct(instance, indentationLevel + INDENTATION_LEVEL_1));
-            stb.append(getEndTag(LIST_ITEM_TAG_NAME)).append("\n");
+            stb.append(getEndTag(LIST_ITEM_TAG_NAME));
         }
         stb.append(indentationLevel);
         return stb.toString();
     }
 
     private static String getXmlElementContent(Object rawValue) {
+//        if(rawValue == null) {
+//            return "";
+//        }
         return rawValue != null ? rawValue.toString() : "";
+        //
+        //return rawValue != null ? rawValue.toString() : "";
+        // hier muss ich irgenwie noch an das xmlelement selbst rankommen. eventuell statt rawValue einfach xmlField übergeben
     }
 
-    private static String getStartTag(String startTagName) {
-        return "<" + startTagName + ">";
-    }
-
-    private static String getEndTag(String endTagName) {
-        return "</" + endTagName + ">";
-    }
-
-    private static String getXMLStartContent(String comment, String rootElementName)  {
-        var stb = new StringBuilder();
-        stb.append(XML_DECLARATION_TEXT).append("\n");
-        if(comment != null && !comment.isBlank()) {
-            stb.append(formatAsXmlComment(comment));
-        }
-        return stb.append("<").append(rootElementName).append(">\n")
-                .toString();
-    }
-
-    private static String getXMLEndContent(String rootElementName) {
-        return "</" +
-                rootElementName +
-                ">";
-    }
-
-    private static String formatAsXmlComment(String comment) {
-        StringBuilder stb = new StringBuilder();
-        stb.append("<!--");
-
-        for (int i = 0; i < comment.length() - 1; i++) {
-            char currentChar = comment.charAt(i);
-            if(currentChar == '-' && stb.charAt(stb.length() - 1) == '-') {
-                stb.append(' ');
-            }
-            stb.append(currentChar);
-        }
-        char lastChar = comment.charAt(comment.length() - 1);
-
-        if(lastChar == '-') {
-            stb.append(' ');
-        }
-        stb.append(lastChar).append("-->").append("\n");
-        return stb.toString();
+    private static String getChildFieldsElementContent() {
+        // xmlField zb returned Human,  childFields name, age, usw
+        return null;
     }
 
     @SafeVarargs
