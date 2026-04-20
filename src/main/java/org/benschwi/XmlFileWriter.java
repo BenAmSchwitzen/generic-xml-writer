@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Function;
 
 import static org.benschwi.XmlFileConstants.*;
 import static org.benschwi.XmlUtil.*;
@@ -139,38 +140,47 @@ public class XmlFileWriter<T> {
             if(rawValue == null && xmlField.nullBehavior() == XmlField.NullBehavior.THROW_EXCEPTION) {
                 throw new XMLFileWriterException("The writing process has failed. The extractor function for the tag with name " + xmlField.name() + " has generated a null value");
             }
-            stb.append(getFullElementConstruct(rawValue, INDENTATION_LEVEL_2));
+            stb.append(getFullElementConstruct(rawValue, xmlField, INDENTATION_LEVEL_2));
 
             stb.append(getEndTag(elementTag));
         }
         return stb.toString();
     }
 
-    private String getFullElementConstruct(Object rawValue, String currentIndentation) {
-        return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, currentIndentation) : getXmlElementContent(rawValue);
+    private String getFullElementConstruct(Object rawValue, XmlField<T> xmlField, String currentIndentation) {
+        return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, xmlField, currentIndentation) : getXmlElementContent(rawValue, xmlField, currentIndentation);
     }
 
-    private String getXmlListElementContent(Collection<?> collection, String indentationLevel) {
+    private String getXmlListElementContent(Collection<?> collection, XmlField<T> xmlField, String indentationLevel) {
         StringBuilder stb = new StringBuilder();
 
         for(Object instance : collection) {
             stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(LIST_ITEM_TAG_NAME));
-            stb.append(getFullElementConstruct(instance, indentationLevel + INDENTATION_LEVEL_1));
+            stb.append(getFullElementConstruct(instance, xmlField, indentationLevel + INDENTATION_LEVEL_1));
             stb.append(getEndTag(LIST_ITEM_TAG_NAME));
         }
         stb.append(indentationLevel);
         return stb.toString();
     }
 
-    private String getXmlElementContent(Object rawValue) {
-        return rawValue != null ? rawValue.toString() : "";
-
+    private String getXmlElementContent(Object rawValue, XmlField<?> xmlField, String indendationLevel) {
+        if(rawValue == null) {
+            return "";
+        }
+        return xmlField.hasChildFields() ?  getChildFieldsContentOfElement(rawValue, xmlField, indendationLevel) : rawValue.toString();
     }
 
-    private String getChildFieldsContentOfElement() {
-        // xmlfield.hasChildFields() check
-        //
-        return "null";
+    private String getChildFieldsContentOfElement(Object rawValue, XmlField<?> xmlField, String indendationLevel) {
+        StringBuilder stb = new StringBuilder();
+        stb.append("\n");
+        for(XmlField<?> field : xmlField.childFields()) {
+            @SuppressWarnings("unchecked")
+            Function<Object, Object> extractor = (Function<Object, Object>) field.valueExtractor();
+            Object value = extractor.apply(rawValue);
+
+            stb.append(indendationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(field.name())).append(getXmlElementContent(value, field, indendationLevel)).append(getEndTag(field.name()));
+        }
+        return stb.append(indendationLevel).toString();
     }
 
     @SafeVarargs
