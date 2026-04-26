@@ -12,8 +12,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Function;
 
 import static org.benschwi.XmlFileConstants.*;
+import static org.benschwi.XmlUtil.*;
 
 /**
  * An XML file writer that works with generic values
@@ -117,7 +119,7 @@ public class XmlFileWriter<T> {
 
         return INDENTATION_LEVEL_1 + getStartTag(xmlElementName) + "\n"
                 + buildXmlElement(xmlElement) +
-                INDENTATION_LEVEL_1 + getEndTag(xmlElementName) + "\n";
+                INDENTATION_LEVEL_1 + getEndTag(xmlElementName);
     }
 
     /**
@@ -138,76 +140,47 @@ public class XmlFileWriter<T> {
             if(rawValue == null && xmlField.nullBehavior() == XmlField.NullBehavior.THROW_EXCEPTION) {
                 throw new XMLFileWriterException("The writing process has failed. The extractor function for the tag with name " + xmlField.name() + " has generated a null value");
             }
-            stb.append(getFullElementConstruct(rawValue, INDENTATION_LEVEL_2));
+            stb.append(getFullElementConstruct(rawValue, xmlField, INDENTATION_LEVEL_2));
 
-            stb.append(getEndTag(elementTag)).append("\n");
+            stb.append(getEndTag(elementTag));
         }
         return stb.toString();
     }
 
-    private String getFullElementConstruct(Object rawValue, String currentIndentation) {
-        return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, currentIndentation) : getXmlElementContent(rawValue);
+    private String getFullElementConstruct(Object rawValue, XmlField<T> xmlField, String currentIndentation) {
+        return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, xmlField, currentIndentation) : getXmlElementContent(rawValue, xmlField, currentIndentation);
     }
 
-    private String getXmlListElementContent(Collection<?> collection, String indentationLevel) {
+    private String getXmlListElementContent(Collection<?> collection, XmlField<T> xmlField, String indentationLevel) {
         StringBuilder stb = new StringBuilder();
 
         for(Object instance : collection) {
-            // hier wieder if instace instanceofe collection und dann rekursiv
             stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(LIST_ITEM_TAG_NAME));
-            stb.append(getFullElementConstruct(instance, indentationLevel + INDENTATION_LEVEL_1));
-            stb.append(getEndTag(LIST_ITEM_TAG_NAME)).append("\n");
+            stb.append(getFullElementConstruct(instance, xmlField, indentationLevel + INDENTATION_LEVEL_1));
+            stb.append(getEndTag(LIST_ITEM_TAG_NAME));
         }
         stb.append(indentationLevel);
         return stb.toString();
     }
 
-    private static String getXmlElementContent(Object rawValue) {
-        return rawValue != null ? rawValue.toString() : "";
-    }
-
-    private static String getStartTag(String startTagName) {
-        return "<" + startTagName + ">";
-    }
-
-    private static String getEndTag(String endTagName) {
-        return "</" + endTagName + ">";
-    }
-
-    private static String getXMLStartContent(String comment, String rootElementName)  {
-        var stb = new StringBuilder();
-        stb.append(XML_DECLARATION_TEXT).append("\n");
-        if(comment != null && !comment.isBlank()) {
-            stb.append(formatAsXmlComment(comment));
+    private String getXmlElementContent(Object rawValue, XmlField<?> xmlField, String indendationLevel) {
+        if(rawValue == null) {
+            return "";
         }
-        return stb.append("<").append(rootElementName).append(">\n")
-                .toString();
+        return xmlField.hasChildFields() ?  getChildFieldsContentOfElement(rawValue, xmlField, indendationLevel) : rawValue.toString();
     }
 
-    private static String getXMLEndContent(String rootElementName) {
-        return "</" +
-                rootElementName +
-                ">";
-    }
-
-    private static String formatAsXmlComment(String comment) {
+    private String getChildFieldsContentOfElement(Object rawValue, XmlField<?> xmlField, String indendationLevel) {
         StringBuilder stb = new StringBuilder();
-        stb.append("<!--");
+        stb.append("\n");
+        for(XmlField<?> field : xmlField.childFields()) {
+            @SuppressWarnings("unchecked")
+            Function<Object, Object> extractor = (Function<Object, Object>) field.valueExtractor();
+            Object value = extractor.apply(rawValue);
 
-        for (int i = 0; i < comment.length() - 1; i++) {
-            char currentChar = comment.charAt(i);
-            if(currentChar == '-' && stb.charAt(stb.length() - 1) == '-') {
-                stb.append(' ');
-            }
-            stb.append(currentChar);
+            stb.append(indendationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(field.name())).append(getXmlElementContent(value, field, indendationLevel)).append(getEndTag(field.name()));
         }
-        char lastChar = comment.charAt(comment.length() - 1);
-
-        if(lastChar == '-') {
-            stb.append(' ');
-        }
-        stb.append(lastChar).append("-->").append("\n");
-        return stb.toString();
+        return stb.append(indendationLevel).toString();
     }
 
     @SafeVarargs
@@ -240,14 +213,6 @@ public class XmlFileWriter<T> {
         if(bufferSize < 1) {
             throw new XMLFileWriterException("The size of the buffer must be greater than 1");
         }
-    }
-
-    public static void main(String[] args) {
-        //TODO recursion and recursion level
-        // TODO : coverage tests
-        //TODO : Add second method das statt file datei schriebt einfach nur XML Strign returned klönnte irgenwie flush deaktievren in BufferedfWriter, aber dann ist dtr noch systme clals glaube, will ja keine nsystme cll
-        // TODO : Schaue was Files.newBufferedWriter(filePath) unter der Haube mmacht. Wahrscheinlich dass gleiche, was ich jketyrt machen werde oder im NOW gemacht  habe
-        // TODO : Fix build warnings
     }
 
 }

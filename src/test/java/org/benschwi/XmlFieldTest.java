@@ -25,7 +25,18 @@ public class XmlFieldTest {
 
     @Test
     void testCreateXmlField_NullBehaviorIsNull() {
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlField<Dummy>("name", Dummy::name, null));
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlField<Dummy>("name", Dummy::name, null,null));
+    }
+
+    @Test
+    void testCreateXmlField_childFieldsIsNull() {
+        assertThatNoException().isThrownBy(() -> new XmlField<Dummy>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION, null));
+    }
+
+    @Test
+    void testCreateXmlField_childFieldsIsEmpty() {
+        XmlField[] emptyArray = new XmlField[3];
+        assertThatNoException().isThrownBy(() -> new XmlField<Dummy>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION, emptyArray));
     }
 
     @Test
