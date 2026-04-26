@@ -13,7 +13,7 @@ import java.util.function.Function;
  * @param childFields array of XML fields. It represents child element mappings. If the array is empty, the XML element is a leaf element. If the array contains at least one field, the XML element is a parent element.
  * @param <A> the type of the source object
  */
-public record XmlField<A, B>(String name, Function<A, B> valueExtractor, NullBehavior nullBehavior, XmlField<B, Object>...childFields) {
+public record XmlField<A, B>(String name, Function<A, B> valueExtractor, NullBehavior nullBehavior, XmlField<B, ?>...childFields) {
 
     @SafeVarargs
     public XmlField {
@@ -23,7 +23,7 @@ public record XmlField<A, B>(String name, Function<A, B> valueExtractor, NullBeh
     }
 
     @SafeVarargs
-    public XmlField(String name, Function<A, B> valueExtractor, XmlField<B, Object>...childFields) {
+    public XmlField(String name, Function<A, B> valueExtractor, XmlField<B, ?>...childFields) {
         this(name, valueExtractor, NullBehavior.EMPTY_ELEMENT_VALUE, childFields);
     }
 
