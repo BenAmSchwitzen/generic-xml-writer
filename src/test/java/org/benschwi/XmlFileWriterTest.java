@@ -18,11 +18,10 @@ public class XmlFileWriterTest {
 
     private static final Path DIR_PATH = Path.of("target").resolve("testFiles");
 
-    private static record Dummy(String name, Integer age, boolean isHealthy) {}
-    private static record RecursiveFieldDummy(String name, Collection<String> listValues) {}
-    private static record RecursiveCollectionDummy(String name, Collection<Collection<Dummy>> listValues) {}
-    private static record DummyRec(String name, Dummy dummy){}
-    private static record DummyCollector(String name, Dummy dummy) {}
+    private record Dummy(String name, Integer age, boolean isHealthy) {}
+    private record RecursiveFieldDummy(String name, Collection<String> listValues) {}
+    private record RecursiveCollectionDummy(String name, Collection<Collection<Dummy>> listValues) {}
+    private record DummyCollector(String name, Dummy dummy) {}
 
     @BeforeAll
     static void setUp() {
@@ -40,15 +39,15 @@ public class XmlFileWriterTest {
 
         @Test
         void testCreateXmlFileWriter() {
-            XmlField<Dummy> xmlField1 = new XmlField<>("name", Dummy::name);
-            XmlField<Dummy> xmlField2 = new XmlField<>("age", Dummy::age);
+            XmlField<Dummy, String> xmlField1 = new XmlField<>("name", Dummy::name);
+            XmlField<Dummy, Integer> xmlField2 = new XmlField<>("age", Dummy::age);
 
             assertThatNoException().isThrownBy(() -> new XmlFileWriter<>(xmlField1, xmlField2));
         }
 
         @Test
         void testCreateXmlFileWriter_xmlFieldsIsNull() {
-           assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> new XmlFileWriter<Dummy>(null));
+           assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> new XmlFileWriter<>(null));
         }
 
         @Test
@@ -86,7 +85,6 @@ public class XmlFileWriterTest {
                     new XmlField<>("name", Dummy::age),
                     new XmlField<>("name", Dummy::isHealthy)
             );
-            String expectedXMLDeclaration = "";
             String expectedRootElementName = "DummyCollection";
             List<Dummy> dummyList = new ArrayList<>();
             dummyList.add(new Dummy("Dummy1", 18, true));
@@ -94,7 +92,6 @@ public class XmlFileWriterTest {
             dummyList.add(new Dummy("Dummy4", 133, true));
 
             assertThatNoException().isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), expectedRootElementName, dummyList));
-
         }
 
         @ParameterizedTest()
@@ -156,10 +153,12 @@ public class XmlFileWriterTest {
                     new XmlField<>("name", Dummy::age),
                     new XmlField<>("name", Dummy::isHealthy)
             );
-
-            List<Dummy> dummyList = null;
-
-            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "DummyCollection", dummyList));
+            assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> testInstance.writeAndCreateXMLFile(
+                    String.valueOf(DIR_PATH),
+                    getRandomFileName(),
+                    "DummyCollection",
+                    null)
+            );
         }
 
         @Test
@@ -311,12 +310,12 @@ public class XmlFileWriterTest {
 
             @Test
             void testCreateXmlFile_hasChildFields() {
-                XmlField<Dummy> dummyField1 = new XmlField<>("dummyName", Dummy::name);
-                XmlField<Dummy> dummyField2 = new XmlField<>("dummyHealthStatus", Dummy::isHealthy);
+                XmlField<Dummy, String> dummyField1 = new XmlField<>("dummyName", Dummy::name);
+                XmlField<Dummy, Boolean> dummyField2 = new XmlField<>("dummyHealthStatus", Dummy::isHealthy);
 
                 XmlFileWriter<DummyCollector> testInstance = new XmlFileWriter<>(
-                        new XmlField<DummyCollector>("name", DummyCollector::name),
-                        new XmlField<DummyCollector>("dummyInstance", DummyCollector::dummy, dummyField1, dummyField2));
+                        new XmlField<>("name", DummyCollector::name),
+                        new XmlField<>("dummyInstance", DummyCollector::dummy, dummyField1, dummyField2));
 
                 testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "DummyCollector", List.of(
                                 createDummyCollector("Collector1", 18, true),
@@ -332,14 +331,8 @@ public class XmlFileWriterTest {
         return UUID.randomUUID().toString();
     }
 
-    private static Dummy createDummy(String name, Integer age, boolean isHealthy) {
-        return new Dummy(name, age, isHealthy);
-    }
-
     private static DummyCollector createDummyCollector(String name, Integer age, boolean isHealthy) {
         return new DummyCollector(name, new Dummy(name, age, isHealthy));
     }
-
-
 
 }
