@@ -19,13 +19,13 @@ import static org.benschwi.XmlUtil.*;
 
 /**
  * An XML file writer that works with generic values
- * @param <T> the type of object from which any attribute can be chosen to appear as an entry in the generated XML file
+ * @param <A> the type of object from which any attribute can be chosen to appear as an entry in the generated XML file
  */
-public class XmlFileWriter<T> {
+public class XmlFileWriter<A> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(XmlFileWriter.class);
 
-    private final XmlField<T,?>[] xmlFields;
+    private final XmlField<A,?>[] xmlFields;
 
     /**
      * The instance that represents an XML file writer with a predefined set of attributes from instances of type {@code T}
@@ -33,7 +33,7 @@ public class XmlFileWriter<T> {
      * @param xmlFields the fields whose values appear in each entry of the XML FILE
      */
     @SafeVarargs
-    public XmlFileWriter(final XmlField<T, ?>...xmlFields) {
+    public XmlFileWriter(final XmlField<A, ?>...xmlFields) {
         this.xmlFields = getValidatedXmlFields(xmlFields);
         LOGGER.debug("Initialized XmlFileWriter instance");
         LOGGER.debug("The predefined values are {}", Arrays.toString(xmlFields));
@@ -49,7 +49,7 @@ public class XmlFileWriter<T> {
      *
      * @throws XMLFileWriterException if one of the values is null or empty
      */
-    public void writeAndCreateXMLFile(final String destinationPath, final String fileName, final String rootElementName, final Collection<T> xmlElements) {
+    public void writeAndCreateXMLFile(final String destinationPath, final String fileName, final String rootElementName, final Collection<A> xmlElements) {
         writeAndCreateXMLFile(destinationPath, fileName, rootElementName, null, 8192, xmlElements);
     }
 
@@ -65,7 +65,7 @@ public class XmlFileWriter<T> {
      *
      * @throws XMLFileWriterException if one of the values is null or empty
      */
-    public void writeAndCreateXMLFile(final String destinationPath, final String fileName, final String rootElementName, final String comment, final int bufferSize, final Collection<T> xmlElements) {
+    public void writeAndCreateXMLFile(final String destinationPath, final String fileName, final String rootElementName, final String comment, final int bufferSize, final Collection<A> xmlElements) {
         LOGGER.debug("Start the process of creating and writing a new xml file");
         validateCreationValues(rootElementName, xmlElements);
         validateBufferSize(bufferSize);
@@ -79,7 +79,7 @@ public class XmlFileWriter<T> {
         try(Writer writer = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(filePath), StandardCharsets.UTF_8), bufferSize)) {
             writer.write(getXMLStartContent(comment, rootElementName));
 
-            for(T value : xmlElements) {
+            for(A value : xmlElements) {
                 if(value != null) {
                     writer.write(getXmlElement(value));
                     LOGGER.debug("Conversion of instance from type {} into an XML element was successful", value.getClass().getSimpleName());
@@ -114,7 +114,7 @@ public class XmlFileWriter<T> {
      * @param xmlElement the XML element to represent as text
      * @return a text representation of {@code xmlElement}
      */
-    private String getXmlElement(T xmlElement)  {
+    private String getXmlElement(A xmlElement)  {
         String xmlElementName = xmlElement.getClass().getSimpleName();
 
         return INDENTATION_LEVEL_1 + getStartTag(xmlElementName) + "\n"
@@ -128,10 +128,10 @@ public class XmlFileWriter<T> {
      * @param xmlElement the element to be represented
      * @return the text body of {@code xmlElement}
      */
-    private String buildXmlElement(T xmlElement) {
+    private String buildXmlElement(A xmlElement) {
         var stb = new StringBuilder();
 
-        for(XmlField<T, ?> xmlField : xmlFields) {
+        for(XmlField<A, ?> xmlField : xmlFields) {
             String elementTag = xmlField.name();
             Object rawValue = xmlField.valueExtractor().apply(xmlElement);
 
@@ -147,11 +147,11 @@ public class XmlFileWriter<T> {
         return stb.toString();
     }
 
-    private String getFullElementConstruct(Object rawValue, XmlField<T, ?> xmlField, String currentIndentation) {
+    private String getFullElementConstruct(Object rawValue, XmlField<A, ?> xmlField, String currentIndentation) {
         return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, xmlField, currentIndentation) : getXmlElementContent(rawValue, xmlField, currentIndentation);
     }
 
-    private String getXmlListElementContent(Collection<?> collection, XmlField<T, ?> xmlField, String indentationLevel) {
+    private String getXmlListElementContent(Collection<?> collection, XmlField<A, ?> xmlField, String indentationLevel) {
         StringBuilder stb = new StringBuilder();
 
         for(Object instance : collection) {
@@ -184,14 +184,14 @@ public class XmlFileWriter<T> {
     }
 
     @SafeVarargs
-    private XmlField<T, ?>[] getValidatedXmlFields(final XmlField<T, ?>...xmlFields) {
+    private XmlField<A, ?>[] getValidatedXmlFields(final XmlField<A, ?>...xmlFields) {
         if(xmlFields == null || xmlFields.length < 1) {
             throw new XMLFileWriterException("xmlFields must not be null nor empty. The xml fields determine which values under which name of the given type T appear in the generated file");
         }
         return xmlFields;
     }
 
-    private void validateCreationValues(String rootElementName, Collection<T> xmlElements)  {
+    private void validateCreationValues(String rootElementName, Collection<A> xmlElements)  {
         if(rootElementName == null || rootElementName.isBlank() || xmlElements == null || xmlElements.isEmpty()) {
             throw new XMLFileWriterException("Validation of creation values failed. Each value must not be null and empty");
         }
