@@ -25,7 +25,7 @@ public class XmlFileWriter<A> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(XmlFileWriter.class);
 
-    private final XmlField<A,?>[] xmlFields;
+    private final XmlField<A, ?>[] xmlFields;
 
     /**
      * The instance that represents an XML file writer with a predefined set of attributes from instances of type {@code T}
