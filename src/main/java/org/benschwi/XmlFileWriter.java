@@ -25,7 +25,7 @@ public class XmlFileWriter<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(XmlFileWriter.class);
 
-    private final XmlField<T>[] xmlFields;
+    private final XmlField<T,?>[] xmlFields;
 
     /**
      * The instance that represents an XML file writer with a predefined set of attributes from instances of type {@code T}
@@ -33,7 +33,7 @@ public class XmlFileWriter<T> {
      * @param xmlFields the fields whose values appear in each entry of the XML FILE
      */
     @SafeVarargs
-    public XmlFileWriter(final XmlField<T>...xmlFields) {
+    public XmlFileWriter(final XmlField<T, ?>...xmlFields) {
         this.xmlFields = getValidatedXmlFields(xmlFields);
         LOGGER.debug("Initialized XmlFileWriter instance");
         LOGGER.debug("The predefined values are {}", Arrays.toString(xmlFields));
@@ -131,7 +131,7 @@ public class XmlFileWriter<T> {
     private String buildXmlElement(T xmlElement) {
         var stb = new StringBuilder();
 
-        for(XmlField<T> xmlField : xmlFields) {
+        for(XmlField<T, ?> xmlField : xmlFields) {
             String elementTag = xmlField.name();
             Object rawValue = xmlField.valueExtractor().apply(xmlElement);
 
@@ -147,11 +147,11 @@ public class XmlFileWriter<T> {
         return stb.toString();
     }
 
-    private String getFullElementConstruct(Object rawValue, XmlField<T> xmlField, String currentIndentation) {
+    private String getFullElementConstruct(Object rawValue, XmlField<T, ?> xmlField, String currentIndentation) {
         return rawValue instanceof Collection<?> e ? "\n" + getXmlListElementContent(e, xmlField, currentIndentation) : getXmlElementContent(rawValue, xmlField, currentIndentation);
     }
 
-    private String getXmlListElementContent(Collection<?> collection, XmlField<T> xmlField, String indentationLevel) {
+    private String getXmlListElementContent(Collection<?> collection, XmlField<T, ?> xmlField, String indentationLevel) {
         StringBuilder stb = new StringBuilder();
 
         for(Object instance : collection) {
@@ -163,28 +163,28 @@ public class XmlFileWriter<T> {
         return stb.toString();
     }
 
-    private String getXmlElementContent(Object rawValue, XmlField<?> xmlField, String indendationLevel) {
+    private String getXmlElementContent(Object rawValue, XmlField<?, ?> xmlField, String indentationLevel) {
         if(rawValue == null) {
             return "";
         }
-        return xmlField.hasChildFields() ?  getChildFieldsContentOfElement(rawValue, xmlField, indendationLevel) : rawValue.toString();
+        return xmlField.hasChildFields() ?  getChildFieldsContentOfElement(rawValue, xmlField, indentationLevel) : rawValue.toString();
     }
 
-    private String getChildFieldsContentOfElement(Object rawValue, XmlField<?> xmlField, String indendationLevel) {
+    private String getChildFieldsContentOfElement(Object rawValue, XmlField<?, ?> xmlField, String indentationLevel) {
         StringBuilder stb = new StringBuilder();
         stb.append("\n");
-        for(XmlField<?> field : xmlField.childFields()) {
+        for(XmlField<?, ?> field : xmlField.childFields()) {
             @SuppressWarnings("unchecked")
             Function<Object, Object> extractor = (Function<Object, Object>) field.valueExtractor();
             Object value = extractor.apply(rawValue);
 
-            stb.append(indendationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(field.name())).append(getXmlElementContent(value, field, indendationLevel)).append(getEndTag(field.name()));
+            stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(field.name())).append(getXmlElementContent(value, field, indentationLevel)).append(getEndTag(field.name()));
         }
-        return stb.append(indendationLevel).toString();
+        return stb.append(indentationLevel).toString();
     }
 
     @SafeVarargs
-    private XmlField<T>[] getValidatedXmlFields(final XmlField<T>...xmlFields) {
+    private XmlField<T, ?>[] getValidatedXmlFields(final XmlField<T, ?>...xmlFields) {
         if(xmlFields == null || xmlFields.length < 1) {
             throw new XMLFileWriterException("xmlFields must not be null nor empty. The xml fields determine which values under which name of the given type T appear in the generated file");
         }
