@@ -45,5 +45,5 @@ public class XmlFieldTest {
         assertThat(xmlField.nullBehavior()).isEqualByComparingTo(expectedValue);
     }
 
-    private static record Dummy(String name, Integer age, boolean isHealthy) {}
+    static record Dummy(String name, Integer age, boolean isHealthy) {}
 }
