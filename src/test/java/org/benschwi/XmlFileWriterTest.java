@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 
@@ -21,6 +22,7 @@ public class XmlFileWriterTest {
     private record Dummy(String name, Integer age, boolean isHealthy) {}
     private record RecursiveFieldDummy(String name, Collection<String> listValues) {}
     private record RecursiveCollectionDummy(String name, Collection<Collection<Dummy>> listValues) {}
+    private record CollectionDummy(String name, Collection<Dummy> listValues) {}
     private record DummyCollector(String name, Dummy dummy) {}
 
     @BeforeAll
@@ -325,6 +327,25 @@ public class XmlFileWriterTest {
 
         }
 
+        @Nested
+        class CreateXmlFileTests_xmlCollectionFieldUsage {
+
+            @Test
+            void testCreateXmlFile_nestedCollection_Level1() {
+                XmlCollectionField<CollectionDummy, Dummy> collField = new XmlCollectionField<>(
+                        "DummyList", CollectionDummy::listValues,
+                        new XmlField<>("dummyName", Dummy::name), new XmlField<>("dummyAge", Dummy::age), new XmlField<>("dummyHealthStatus", Dummy::isHealthy)
+                );
+
+                XmlFileWriter<CollectionDummy> fileWriter = new XmlFileWriter<>(
+                        new XmlField<CollectionDummy, String>("CollectionDummyName", CollectionDummy::name)
+                        // Jetzt muss ich erst FileWriter anpassen
+                );
+
+
+            }
+
+        }
     }
 
     private static String getRandomFileName() {
