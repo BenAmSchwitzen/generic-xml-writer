@@ -154,18 +154,18 @@ public class XmlFileWriter<A> {
                     Function extractor = (Function) xmlCollectionField.valueExtractor();
                     Collection<?> rawCollection = (Collection<?>) extractor.apply(xmlEntry);
 
-                    stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getStartTag(tagName)).append("\n");
+                    stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(tagName)).append("\n");
 
                     for(Object value : rawCollection) {
                         if(xmlCollectionField.hasChildFields()) {
                             for(XmlNode<?> childNode : xmlCollectionField.childFields()) {
-                                stb.append(constructElement(value, childNode, indentationLevel + INDENTATION_LEVEL_2));
+                                stb.append(constructElement(value, childNode, indentationLevel + INDENTATION_LEVEL_1));
                             }
                         } else  {
                             stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getElementWithValue(tagName, value)).append("\n");
                         }
                     }
-                    stb.append(getEndTag(tagName)).append("\n");
+                    stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getEndTag(tagName));
                 }
             }
         return stb.toString();

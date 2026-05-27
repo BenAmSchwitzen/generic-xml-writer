@@ -345,6 +345,21 @@ public class XmlFileWriterTest {
 
             }
 
+            @Test
+            void testCreateNewUpdate_dasGleichDurchspielen() {
+                XmlFileWriter<CollectionDummy> testInstance = new XmlFileWriter<>(
+                        new XmlField<CollectionDummy, String>("CollectionDummyName", CollectionDummy::name),
+                        new XmlCollectionField<>("Collection", CollectionDummy::listValues, new XmlField<Dummy, Dummy>("Dummy", e -> e, new XmlField<Dummy, String>("DummyName", Dummy::name)))
+                );
+
+                Collection<CollectionDummy> values = List.of(
+                        new CollectionDummy("CollectionDummy1", List.of(new Dummy("name", 18, true))
+                ));
+
+                testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "DummyCollector", values);
+
+            }
+
         }
     }
 
