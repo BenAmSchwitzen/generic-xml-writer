@@ -137,6 +137,10 @@ public class XmlFileWriter<A> {
                 Function<Object, Object> extractor = (Function<Object, Object>) xmlField.valueExtractor();
                 Object rawValue = extractor.apply(xmlEntry);
 
+                if(rawValue == null && xmlField.nullBehavior() == XmlField.NullBehavior.THROW_EXCEPTION) {
+                    throw new XMLFileWriterException("The value of the field " + tagName + " is null. The null behavior of this field is set to THROW_EXCEPTION. Therefore, the writing process was stopped.");
+                }
+
                 stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(tagName));
                 if(xmlField.hasChildFields()) {
                     stb.append("\n");
