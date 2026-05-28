@@ -162,11 +162,13 @@ public class XmlFileWriter<A> {
 
                     for(Object value : rawCollection) {
                         if(xmlCollectionField.hasChildFields()) {
+                            stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getStartTag(xmlCollectionField.elementName())).append("\n");
                             for(XmlNode<?> childNode : xmlCollectionField.childFields()) {
-                                stb.append(constructElement(value, childNode, indentationLevel + INDENTATION_LEVEL_1));
+                                stb.append(constructElement(value, childNode, indentationLevel + INDENTATION_LEVEL_2));
                             }
+                            stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getEndTag(xmlCollectionField.elementName()));
                         } else  {
-                            stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getElementWithValue(tagName, value)).append("\n");
+                            stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getElementWithValue(xmlCollectionField.elementName(), value));
                         }
                     }
                     stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getEndTag(tagName));
