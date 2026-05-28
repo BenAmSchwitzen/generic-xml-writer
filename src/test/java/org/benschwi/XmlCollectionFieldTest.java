@@ -13,22 +13,27 @@ public class XmlCollectionFieldTest {
 
     @Test
     void testCreateXmlCollectionField() {
-        assertThatNoException().isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", CollectionDummy::numberList));
+        assertThatNoException().isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", "IntegerItem", CollectionDummy::numberList));
+    }
+
+    @Test
+    void testCreateXmlCollectionField_elementNameIsNull() {
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", null, CollectionDummy::numberList));
     }
 
     @Test
     void testCreateXmlCollectionField_nameIsNull() {
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>(null, CollectionDummy::numberList));
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>(null, "elementName", CollectionDummy::numberList));
     }
 
     @Test
     void testCreateXmlCollectionField_extractorFunctionIsNull() {
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", null));
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", "IntegerItem", null));
     }
 
     @Test
     void testCreateXmlCollectionField_childFieldsIsNull() {
-        assertThatNoException().isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", CollectionDummy::numberList, (XmlField<Integer, ?>) null));
+        assertThatNoException().isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", "IntegerItem" , CollectionDummy::numberList, (XmlField<Integer, ?>) null));
     }
 
 }

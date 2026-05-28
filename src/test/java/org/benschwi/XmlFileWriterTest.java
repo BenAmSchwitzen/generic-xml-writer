@@ -282,7 +282,7 @@ public class XmlFileWriterTest {
             void testCreateAndWriteXmlFile_oneFieldHasCollectionType() {
                 XmlFileWriter<RecursiveFieldDummy> testInstance = new XmlFileWriter<>(
                         new XmlField<>("iAmAListContainer", RecursiveFieldDummy::name),
-                        new XmlField<>("collection", RecursiveFieldDummy::listValues)
+                        new XmlCollectionField<>("collection", "CollectionItem", RecursiveFieldDummy::listValues, new XmlField<>("StringLength", String::length))
                 );
                 List<RecursiveFieldDummy> recursiveFieldDummyList = List.of(
                         new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
@@ -296,7 +296,7 @@ public class XmlFileWriterTest {
             void testCreateAndWriteXmlFile_CollectionInCollection() {
                 XmlFileWriter<RecursiveCollectionDummy> testInstance = new XmlFileWriter<>(
                         new XmlField<>("collectionContainer", RecursiveCollectionDummy::name),
-                        new XmlField<>("collection", RecursiveCollectionDummy::listValues)
+                        new XmlCollectionField<>("OuterList", "OuterListItem", RecursiveCollectionDummy::listValues)
                 );
                 List<RecursiveCollectionDummy> recursiveFieldDummyList = List.of(
                         new RecursiveCollectionDummy("Dummy1", List.of(List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)), List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)))),
@@ -333,7 +333,7 @@ public class XmlFileWriterTest {
             @Test
             void testCreateXmlFile_nestedCollection_Level1() {
                 XmlCollectionField<CollectionDummy, Dummy> collField = new XmlCollectionField<>(
-                        "DummyList", CollectionDummy::listValues,
+                        "DummyList", "DummyItem", CollectionDummy::listValues,
                         new XmlField<>("dummyName", Dummy::name), new XmlField<>("dummyAge", Dummy::age), new XmlField<>("dummyHealthStatus", Dummy::isHealthy)
                 );
 
@@ -349,7 +349,7 @@ public class XmlFileWriterTest {
             void testCreateNewUpdate_dasGleichDurchspielen() {
                 XmlFileWriter<CollectionDummy> testInstance = new XmlFileWriter<>(
                         new XmlField<CollectionDummy, String>("CollectionDummyName", CollectionDummy::name),
-                        new XmlCollectionField<>("Collection", CollectionDummy::listValues, new XmlField<Dummy, Dummy>("Dummy", e -> e, new XmlField<Dummy, String>("DummyName", Dummy::name)))
+                        new XmlCollectionField<>("Collection", "DummyItem", CollectionDummy::listValues, new XmlField<Dummy, String>("DummyName", Dummy::name))
                 );
 
                 Collection<CollectionDummy> values = List.of(
