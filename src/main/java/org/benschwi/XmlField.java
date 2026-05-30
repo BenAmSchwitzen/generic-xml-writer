@@ -8,13 +8,13 @@ import java.util.function.Function;
  * The mapping forms an XML element.
  *
  * @param name the tag name of the XML element
- * @param valueExtractor a function that extracts content for this element from a source object of type {@code T}
+ * @param valueExtractor a function that extracts content for this element from a source object of type {@code A}
  * @param nullBehavior a constant that defines behavior when the extraction of a value returns null
  * @param childFields array of XML fields. It represents child element mappings. If the array is empty, the XML element is a leaf element. If the array contains at least one field, the XML element is a parent element.
  * @param <A> the type of the source object
  * @param <B> the type of the value extracted by the valueExtractor function
  */
-public record XmlField<A, B>(String name, Function<A, B> valueExtractor, NullBehavior nullBehavior, XmlField<B, ?>...childFields) implements XmlNode<A> {
+public record XmlField<A, B>(String name, Function<A, B> valueExtractor, NullBehavior nullBehavior, XmlNode<B>...childFields) implements XmlNode<A> {
 
     @SafeVarargs
     public XmlField {

@@ -15,7 +15,7 @@ public final class XmlUtil {
     }
 
     static String getElementWithValue(String elementName, Object value) {
-        return getStartTag(elementName) + value + getEndTag(elementName);
+        return getStartTag(elementName) + (value != null ? value.toString() : "") + getEndTag(elementName);
     }
 
     static String getXMLEndContent(String rootElementName) {
