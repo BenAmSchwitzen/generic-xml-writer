@@ -33,7 +33,12 @@ public class XmlCollectionFieldTest {
 
     @Test
     void testCreateXmlCollectionField_childFieldsIsNull() {
-        assertThatNoException().isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", "IntegerItem" , CollectionDummy::numberList, (XmlField<Integer, ?>) null));
+        assertThatNoException().isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", "IntegerItem" , CollectionDummy::numberList, (XmlField<Integer, ?> []) null));
+    }
+
+    @Test
+    void testCreateXmlCollectionField_childFieldsArrayContainsAtLeastOneNullElement() {
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", "IntegerItem" , CollectionDummy::numberList, (XmlField<Integer, ?>) null));
     }
 
 }

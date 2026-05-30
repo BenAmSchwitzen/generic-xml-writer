@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.*;
 
 public class XmlFieldTest {
 
+    static record Dummy(String name, Integer age, boolean isHealthy) {}
+
     @Test
     void testCreateXmlField() {
         assertThatNoException().isThrownBy(() -> new XmlField<>("name", Dummy::name));
@@ -32,9 +34,8 @@ public class XmlFieldTest {
     }
 
     @Test
-    void testCreateXmlField_childFieldsIsEmpty() {
-        XmlField[] emptyArray = new XmlField[3];
-        assertThatNoException().isThrownBy(() -> new XmlField<Dummy, String>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION, emptyArray));
+    void testCreateXmlField_childFieldsArrayContainsAtLeastOneNullElement() {
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlField<Dummy, String>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION, (XmlField<String, ?>) null));
     }
 
     @Test
@@ -45,5 +46,4 @@ public class XmlFieldTest {
         assertThat(xmlField.nullBehavior()).isEqualByComparingTo(expectedValue);
     }
 
-    static record Dummy(String name, Integer age, boolean isHealthy) {}
 }

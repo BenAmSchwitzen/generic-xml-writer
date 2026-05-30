@@ -327,40 +327,6 @@ public class XmlFileWriterTest {
 
         }
 
-        @Nested
-        class CreateXmlFileTests_xmlCollectionFieldUsage {
-
-            @Test
-            void testCreateXmlFile_nestedCollection_Level1() {
-                XmlCollectionField<CollectionDummy, Dummy> collField = new XmlCollectionField<>(
-                        "DummyList", "DummyItem", CollectionDummy::listValues,
-                        new XmlField<>("dummyName", Dummy::name), new XmlField<>("dummyAge", Dummy::age), new XmlField<>("dummyHealthStatus", Dummy::isHealthy)
-                );
-
-                XmlFileWriter<CollectionDummy> fileWriter = new XmlFileWriter<>(
-                        new XmlField<CollectionDummy, String>("CollectionDummyName", CollectionDummy::name)
-                        // Jetzt muss ich erst FileWriter anpassen
-                );
-
-
-            }
-
-            @Test
-            void testCreateNewUpdate_dasGleichDurchspielen() {
-                XmlFileWriter<CollectionDummy> testInstance = new XmlFileWriter<>(
-                        new XmlField<CollectionDummy, String>("CollectionDummyName", CollectionDummy::name),
-                        new XmlCollectionField<>("Collection", "DummyItem", CollectionDummy::listValues, new XmlField<Dummy, String>("DummyName", Dummy::name))
-                );
-
-                Collection<CollectionDummy> values = List.of(
-                        new CollectionDummy("CollectionDummy1", List.of(new Dummy("name", 18, true))
-                ));
-
-                testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "DummyCollector", values);
-
-            }
-
-        }
     }
 
     private static String getRandomFileName() {
