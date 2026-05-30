@@ -21,6 +21,12 @@ public record XmlField<A, B>(String name, Function<A, B> valueExtractor, NullBeh
         Objects.requireNonNull(name, "The name must not be null");
         Objects.requireNonNull(valueExtractor, "The extractor function must not be null.");
         Objects.requireNonNull(nullBehavior,"nullBehavior must not be null. Use the other constructor where the default value for nullBehavior is EMPTY_ELEMENT_VALUE");
+
+        if(childFields != null) {
+            for(var childField : childFields) {
+                Objects.requireNonNull(childField, "The childFields array that revolves around the element value being inside the tag with name " + name + " must not contain null values");
+            }
+        }
     }
 
     @SafeVarargs

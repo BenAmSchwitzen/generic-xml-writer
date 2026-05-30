@@ -22,6 +22,12 @@ public record XmlCollectionField<A, B>(String name, String elementName, Function
         Objects.requireNonNull(name, "The name must not be null");
         Objects.requireNonNull(elementName, "The elementMame must not be null");
         Objects.requireNonNull(valueExtractor, "The extractor function must not be null.");
+
+        if(childFields != null) {
+            for(var childField : childFields) {
+                Objects.requireNonNull(childField, "The childFields array that revolves around the element value being inside the tag with name " + name + " must not contain null values");
+            }
+        }
     }
 
     public boolean hasChildFields() {
