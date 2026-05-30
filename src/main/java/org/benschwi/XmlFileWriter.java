@@ -142,7 +142,7 @@ public class XmlFileWriter<A> {
                 }
 
                 stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(tagName));
-                if(xmlField.hasChildFields()) {
+                if(xmlField.hasChildFields() && rawValue != null) {
                     stb.append("\n");
                     for(XmlNode<?> childNode : xmlField.childFields()) {
                         stb.append(constructElement(rawValue, childNode, indentationLevel + INDENTATION_LEVEL_1));
@@ -160,15 +160,17 @@ public class XmlFileWriter<A> {
 
                     stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(tagName)).append("\n");
 
-                    for(Object value : rawCollection) {
-                        if(xmlCollectionField.hasChildFields()) {
-                            stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getStartTag(xmlCollectionField.elementName())).append("\n");
-                            for(XmlNode<?> childNode : xmlCollectionField.childFields()) {
-                                stb.append(constructElement(value, childNode, indentationLevel + INDENTATION_LEVEL_2));
+                    if(rawCollection != null) {
+                        for(Object value : rawCollection) {
+                            if(xmlCollectionField.hasChildFields() && value != null) {
+                                stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getStartTag(xmlCollectionField.elementName())).append("\n");
+                                for(XmlNode<?> childNode : xmlCollectionField.childFields()) {
+                                    stb.append(constructElement(value, childNode, indentationLevel + INDENTATION_LEVEL_2));
+                                }
+                                stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getEndTag(xmlCollectionField.elementName()));
+                            } else  {
+                                stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getElementWithValue(xmlCollectionField.elementName(), value));
                             }
-                            stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getEndTag(xmlCollectionField.elementName()));
-                        } else  {
-                            stb.append(indentationLevel).append(INDENTATION_LEVEL_2).append(getElementWithValue(xmlCollectionField.elementName(), value));
                         }
                     }
                     stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getEndTag(tagName));
@@ -180,7 +182,7 @@ public class XmlFileWriter<A> {
     @SafeVarargs
     private XmlNode<A>[] getValidatedXmlFields(final XmlNode<A>...xmlNodes) {
         if(xmlNodes == null || xmlNodes.length < 1) {
-            throw new XMLFileWriterException("xmlFields must not be null nor empty. The xml fields determine which values under which name of the given type T appear in the generated file");
+            throw new XMLFileWriterException("xmlNodes must not be null nor empty. The xml nodes determine which values under which name of the given type A appear in the generated file");
         }
         return xmlNodes;
     }
