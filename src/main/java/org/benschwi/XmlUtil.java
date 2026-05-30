@@ -14,6 +14,10 @@ public final class XmlUtil {
         return "</" + endTagName + ">" + "\n";
     }
 
+    static String getElementWithValue(String elementName, Object value) {
+        return getStartTag(elementName) + (value != null ? value.toString() : "") + getEndTag(elementName);
+    }
+
     static String getXMLEndContent(String rootElementName) {
         return "</" +
                 rootElementName +

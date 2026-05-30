@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 
@@ -47,11 +48,11 @@ public class XmlFileWriterTest {
 
         @Test
         void testCreateXmlFileWriter_xmlFieldsIsNull() {
-           assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> new XmlFileWriter<>(null));
+           assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> new XmlFileWriter<>((XmlNode<Object>[]) null));
         }
 
         @Test
-        void testCreateXmlFileWriter_xmlFieldsIsEmpty() {
+        void testCreateXmlFileWriter_containsAtLeastOneNullElement() {
             assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(XmlFileWriter<Dummy>::new);
         }
 
@@ -280,7 +281,7 @@ public class XmlFileWriterTest {
             void testCreateAndWriteXmlFile_oneFieldHasCollectionType() {
                 XmlFileWriter<RecursiveFieldDummy> testInstance = new XmlFileWriter<>(
                         new XmlField<>("iAmAListContainer", RecursiveFieldDummy::name),
-                        new XmlField<>("collection", RecursiveFieldDummy::listValues)
+                        new XmlCollectionField<>("collection", "CollectionItem", RecursiveFieldDummy::listValues, new XmlField<>("StringLength", String::length))
                 );
                 List<RecursiveFieldDummy> recursiveFieldDummyList = List.of(
                         new RecursiveFieldDummy("Dummy1", List.of("item1", "item2")),
@@ -294,7 +295,7 @@ public class XmlFileWriterTest {
             void testCreateAndWriteXmlFile_CollectionInCollection() {
                 XmlFileWriter<RecursiveCollectionDummy> testInstance = new XmlFileWriter<>(
                         new XmlField<>("collectionContainer", RecursiveCollectionDummy::name),
-                        new XmlField<>("collection", RecursiveCollectionDummy::listValues)
+                        new XmlCollectionField<>("OuterList", "OuterListItem", RecursiveCollectionDummy::listValues)
                 );
                 List<RecursiveCollectionDummy> recursiveFieldDummyList = List.of(
                         new RecursiveCollectionDummy("Dummy1", List.of(List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)), List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)))),
