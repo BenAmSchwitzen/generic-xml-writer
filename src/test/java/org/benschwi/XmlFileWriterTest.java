@@ -22,7 +22,6 @@ public class XmlFileWriterTest {
     private record Dummy(String name, Integer age, boolean isHealthy) {}
     private record RecursiveFieldDummy(String name, Collection<String> listValues) {}
     private record RecursiveCollectionDummy(String name, Collection<Collection<Dummy>> listValues) {}
-    private record CollectionDummy(String name, Collection<Dummy> listValues) {}
     private record DummyCollector(String name, Dummy dummy) {}
 
     @BeforeAll
@@ -49,11 +48,11 @@ public class XmlFileWriterTest {
 
         @Test
         void testCreateXmlFileWriter_xmlFieldsIsNull() {
-           assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> new XmlFileWriter<>(null));
+           assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(() -> new XmlFileWriter<>((XmlNode<Object>[]) null));
         }
 
         @Test
-        void testCreateXmlFileWriter_xmlFieldsIsEmpty() {
+        void testCreateXmlFileWriter_containsAtLeastOneNullElement() {
             assertThatExceptionOfType(XMLFileWriterException.class).isThrownBy(XmlFileWriter<Dummy>::new);
         }
 

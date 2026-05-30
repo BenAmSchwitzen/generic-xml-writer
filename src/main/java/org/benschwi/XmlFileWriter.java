@@ -184,6 +184,11 @@ public class XmlFileWriter<A> {
         if(xmlNodes == null || xmlNodes.length < 1) {
             throw new XMLFileWriterException("xmlNodes must not be null nor empty. The xml nodes determine which values under which name of the given type A appear in the generated file");
         }
+        for(XmlNode<A> xmlNode : xmlNodes) {
+            if(xmlNode == null) {
+                throw new XMLFileWriterException("xmlNodes must not contain null values.");
+            }
+        }
         return xmlNodes;
     }
 
