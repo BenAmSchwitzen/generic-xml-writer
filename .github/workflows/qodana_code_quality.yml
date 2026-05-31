@@ -9,8 +9,8 @@ on:
   pull_request:
   push:
     branches:
+      - main
       - master
-      - adjustments
 
 jobs:
   qodana:
