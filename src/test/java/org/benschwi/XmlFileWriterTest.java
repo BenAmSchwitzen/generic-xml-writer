@@ -294,8 +294,12 @@ public class XmlFileWriterTest {
             @Test
             void testCreateAndWriteXmlFile_CollectionInCollection() {
                 XmlFileWriter<RecursiveCollectionDummy> testInstance = new XmlFileWriter<>(
-                        new XmlField<>("collectionContainer", RecursiveCollectionDummy::name),
-                        new XmlCollectionField<>("OuterList", "OuterListItem", RecursiveCollectionDummy::listValues)
+                        new XmlField<>("name", RecursiveCollectionDummy::name),
+                        new XmlCollectionField<>("OuterList", "innerLists", RecursiveCollectionDummy::listValues
+                        , new XmlCollectionField<>("InnerList", "Dummy", list -> list,
+                                new XmlField<>("name", Dummy::name),
+                                new XmlField<>("age", Dummy::age),
+                                new XmlField<>("healthy", Dummy::isHealthy)))
                 );
                 List<RecursiveCollectionDummy> recursiveFieldDummyList = List.of(
                         new RecursiveCollectionDummy("Dummy1", List.of(List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)), List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)))),
