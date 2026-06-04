@@ -2,7 +2,7 @@ package org.benschwi;
 
 import static org.benschwi.XmlFileConstants.XML_DECLARATION_TEXT;
 
-public final class XmlUtil {
+final class XmlUtil {
 
     private XmlUtil() {}
 
