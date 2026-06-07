@@ -19,10 +19,11 @@ public class XmlFileWriterTest {
 
     private static final Path DIR_PATH = Path.of("target").resolve("testFiles");
 
-    private record Dummy(String name, Integer age, boolean isHealthy) {}
-    private record RecursiveFieldDummy(String name, Collection<String> listValues) {}
-    private record RecursiveCollectionDummy(String name, Collection<Collection<Dummy>> listValues) {}
-    private record DummyCollector(String name, Dummy dummy) {}
+    private static record Dummy(String name, Integer age, boolean isHealthy) {}
+    private static record RecursiveFieldDummy(String name, Collection<String> listValues) {}
+    private static record RecursiveCollectionDummy(String name, Collection<Collection<Dummy>> listValues) {}
+    private static record DummyCollector(String name, Dummy dummy) {}
+    private static record AttributeDummy(UUID id, String name, int age) {}
 
     @BeforeAll
     static void setUp() {
@@ -327,6 +328,33 @@ public class XmlFileWriterTest {
                                 createDummyCollector("Collector2", 27, false),
                                 createDummyCollector("Collector3", 133, true)));
             }
+
+        }
+
+        @Nested
+        class CreateXmlFileTests_usageOfXmlAttributes {
+
+            @Test
+            void testCreateXmlFile_xmlFieldHasAttributes() {
+                XmlFileWriter<AttributeDummy> testInstance = new XmlFileWriter<>(
+                        new XmlField<>("name", AttributeDummy::name)
+                                .setAttribute("nameLength", attributeDummy -> attributeDummy.name().length())
+                                .setAttribute("isAdult", attributeDummy -> attributeDummy.age() >= 18)
+                );
+
+                testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "AttributeDummies", List.of(
+                        new AttributeDummy(UUID.randomUUID(),"TestName1", 13),
+                        new AttributeDummy(UUID.randomUUID(),"TestName2", 43),
+                        new AttributeDummy(UUID.randomUUID(),"TestName3", 3),
+                        new AttributeDummy(UUID.randomUUID(),"TestName4", 98)
+                ));
+            }
+
+
+            @Test
+            void testCreateXmlFile_xmlCollectionFieldHasAttributes() {
+            }
+
 
         }
 
