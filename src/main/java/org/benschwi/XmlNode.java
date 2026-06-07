@@ -8,6 +8,8 @@ public sealed interface XmlNode<A> permits XmlField, XmlCollectionField {
 
     boolean hasChildFields();
 
+    XmlNode<A> setAttribute(String name, Function<A, ?> valueExtractor);
+
     Function<A, ?> valueExtractor();
 
 }
