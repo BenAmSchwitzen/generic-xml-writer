@@ -28,7 +28,7 @@ public class XmlFileWriter<A> {
     private final XmlNode<A>[] xmlNodes;
 
     /**
-     * The instance that represents an XML file writer with a predefined set of attributes from instances of type {@code T}
+     * The instance that represents an XML file writer with a predefined set of attributes from instances of type {@code A}
      *
      * @param xmlNodes the fields whose values appear in each entry of the XML FILE
      */
