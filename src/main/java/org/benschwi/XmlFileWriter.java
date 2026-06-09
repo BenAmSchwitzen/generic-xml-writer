@@ -140,8 +140,8 @@ public class XmlFileWriter<A> {
                 if(rawValue == null && xmlField.nullBehavior() == XmlField.NullBehavior.THROW_EXCEPTION) {
                     throw new XMLFileWriterException("The value of the field " + tagName + " is null. The null behavior of this field is set to THROW_EXCEPTION. Therefore, the writing process was stopped.");
                 }
-                stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(tagName));
-                stb.append(getElementAttributes(xmlField.attributes(), xmlEntry));
+                stb.append(indentationLevel).append(INDENTATION_LEVEL_1)
+                        .append(getStartTagWithAttributes(tagName, xmlField.attributes(), xmlEntry));
 
                 if(xmlField.hasChildFields() && rawValue != null) {
                     stb.append("\n");
@@ -159,8 +159,8 @@ public class XmlFileWriter<A> {
                     Function extractor = (Function) xmlCollectionField.valueExtractor();
                     Collection<?> rawCollection = (Collection<?>) extractor.apply(xmlEntry);
 
-                    stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getStartTag(tagName))
-                            .append(getElementAttributes(xmlCollectionField.attributes(), xmlEntry))
+                    stb.append(indentationLevel).append(INDENTATION_LEVEL_1)
+                            .append(getStartTagWithAttributes(tagName, xmlCollectionField.attributes(), xmlEntry))
                             .append("\n");
 
                     if(rawCollection != null) {
@@ -178,7 +178,29 @@ public class XmlFileWriter<A> {
                     }
                     stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getEndTag(tagName));
                 }
+            case XmlNestedCollectionField<?, ?> xmlNestedCollectionField -> {
+                @SuppressWarnings({"rawtypes"})
+                Function extractor = (Function) xmlNestedCollectionField.valueExtractor();
+                Collection<?> rawCollection = (Collection<?>) extractor.apply(xmlEntry);
+
+                stb.append(indentationLevel).append(INDENTATION_LEVEL_1)
+                        .append(getStartTagWithAttributes(tagName, xmlNestedCollectionField.attributes(), xmlEntry))
+                        .append("\n");
+
+                if (rawCollection != null) {
+                    for (Object value : rawCollection) {
+                        if (value != null && xmlNestedCollectionField.hasChildFields()) {
+                            for (XmlNode<?> childNode : xmlNestedCollectionField.childFields()) {
+                                stb.append(constructElement(value, childNode, indentationLevel + INDENTATION_LEVEL_1));
+                            }
+                        } else {
+                            stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(value);
+                        }
+                    }
+                }
+                stb.append(indentationLevel).append(INDENTATION_LEVEL_1).append(getEndTag(tagName));
             }
+        }
         return stb.toString();
     }
 

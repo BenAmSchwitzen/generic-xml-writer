@@ -354,9 +354,10 @@ public class XmlFileWriterTest {
             @Test
             void testCreateXmlFile_xmlCollectionFieldHasAttributes() {
                 XmlFileWriter<RecursiveCollectionDummy> testInstance = new XmlFileWriter<>(
-                   new XmlCollectionField<RecursiveCollectionDummy, Collection<Dummy>>("outer", "innerList", RecursiveCollectionDummy::listValues,
-                           new XmlCollectionField<Collection<Dummy>, Dummy>("Collection", "Dummy",dummies -> dummies,
-                                   new XmlField<Dummy, String>("name", Dummy::name)
+                   new XmlNestedCollectionField<>("outer", RecursiveCollectionDummy::listValues,
+                           new XmlCollectionField<Collection<Dummy>, Dummy>("innerList", "Dummy",dummies -> dummies,
+                                   new XmlField<Dummy, String>("name", Dummy::name),
+                                   new XmlField<Dummy, Integer>("age", Dummy::age)
                            ).setAttribute("size", Collection::size)
                    )
                 );
