@@ -1,6 +1,8 @@
 package org.benschwi;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static org.benschwi.XmlFileConstants.XML_DECLARATION_TEXT;
@@ -21,7 +23,11 @@ final class XmlUtil {
         return getStartTag(elementName) + (value != null ? value.toString() : "") + getEndTag(elementName);
     }
 
-    static String getElementAttributes(List<? extends XmlAttribute<?>> attributes, Object sourceObject) {
+    static String getStartTagWithAttributes(String startTagName, List<? extends XmlAttribute<?>> attributes, Object sourceObject) {
+        return "<" + startTagName + getElementAttributes(attributes, sourceObject) + ">";
+    }
+
+    private static String getElementAttributes(List<? extends XmlAttribute<?>> attributes, Object sourceObject) {
         StringBuilder stb = new StringBuilder();
         for(XmlAttribute<?> attribute : attributes) {
             @SuppressWarnings("unchecked")
