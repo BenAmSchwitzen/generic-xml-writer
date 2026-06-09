@@ -194,7 +194,7 @@ public class XmlFileWriterTest {
         @Test
         void testCreateAndWriteXmlFile_NullBehaviourIsTHROW_EXCEPTIONAndFunctionReturnsNull() {
             XmlFileWriter<Dummy> testInstance = new XmlFileWriter<>(
-                    new XmlField<>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION),
+                    new XmlField<Dummy, String>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION),
                     new XmlField<>("name", Dummy::age),
                     new XmlField<>("name", Dummy::isHealthy)
             );
@@ -210,7 +210,7 @@ public class XmlFileWriterTest {
         @DisplayName("This test proves that no file is created when the writing process throws an exception")
         void testCreateAndWriteXmlFile_ThrownExceptionDuringWritingProcess() {
             XmlFileWriter<RecursiveFieldDummy> testInstance = new XmlFileWriter<>(
-                    new XmlField<>("iAmAListContainer", RecursiveFieldDummy::name, XmlField.NullBehavior.THROW_EXCEPTION),
+                    new XmlField<RecursiveFieldDummy, String>("iAmAListContainer", RecursiveFieldDummy::name, XmlField.NullBehavior.THROW_EXCEPTION),
                     new XmlField<>("collection", RecursiveFieldDummy::listValues)
             );
             List<RecursiveFieldDummy> recursiveFieldDummyList = List.of(
@@ -252,7 +252,7 @@ public class XmlFileWriterTest {
         @Disabled
         void testCreateAndWriteXmlFile_SmallBufferSize() {
             XmlFileWriter<RecursiveFieldDummy> testInstance = new XmlFileWriter<>(
-                    new XmlField<>("iAmAListContainer", RecursiveFieldDummy::name, XmlField.NullBehavior.EMPTY_ELEMENT_VALUE),
+                    new XmlField<RecursiveFieldDummy, String>("iAmAListContainer", RecursiveFieldDummy::name, XmlField.NullBehavior.EMPTY_ELEMENT_VALUE),
                     new XmlField<>("collection", RecursiveFieldDummy::listValues)
             );
 
@@ -353,6 +353,23 @@ public class XmlFileWriterTest {
 
             @Test
             void testCreateXmlFile_xmlCollectionFieldHasAttributes() {
+                XmlFileWriter<RecursiveCollectionDummy> testInstance = new XmlFileWriter<>(
+                   new XmlCollectionField<RecursiveCollectionDummy, Collection<Dummy>>("outer", "innerList", RecursiveCollectionDummy::listValues,
+                           new XmlCollectionField<Collection<Dummy>, Dummy>("Collection", "Dummy",dummies -> dummies,
+                                   new XmlField<Dummy, String>("name", Dummy::name)
+                           ).setAttribute("size", Collection::size)
+                   )
+                );
+                List<RecursiveCollectionDummy> recursiveFieldDummyList = List.of(
+                        new RecursiveCollectionDummy("Dummy1", List.of(List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)), List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)))),
+                        new RecursiveCollectionDummy("Dummy2", List.of(List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)), List.of(new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true)))),
+                        new RecursiveCollectionDummy("Dummy2",  List.of(List.of(new Dummy("name", 18, true), new Dummy("name", 18, true)), List.of(new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true), new Dummy("name", 18, true))))
+                );
+                testInstance.writeAndCreateXMLFile(String.valueOf(DIR_PATH), getRandomFileName(), "RecursiveFieldDummyRoot", recursiveFieldDummyList);
+            }
+
+            @Test
+            void testCreateXmlFile_firstLevelChildHasAttributes() {
             }
 
 
