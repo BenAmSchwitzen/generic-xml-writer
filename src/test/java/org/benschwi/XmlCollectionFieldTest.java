@@ -1,8 +1,8 @@
 package org.benschwi;
 
-import org.junit.jupiter.api.Test;
-
+import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -33,12 +33,12 @@ public class XmlCollectionFieldTest {
 
     @Test
     void testCreateXmlCollectionField_childFieldsIsNull() {
-        assertThatNoException().isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", "IntegerItem" , CollectionDummy::numberList, (XmlField<Integer, ?> []) null));
+        assertThatNoException().isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", "IntegerItem" , CollectionDummy::numberList, (XmlNode<Integer> []) null));
     }
 
     @Test
     void testCreateXmlCollectionField_childFieldsArrayContainsAtLeastOneNullElement() {
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", "IntegerItem" , CollectionDummy::numberList, (XmlField<Integer, ?>) null));
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlCollectionField<CollectionDummy, Integer>("DummyName", "IntegerItem" , CollectionDummy::numberList, (XmlNode<Integer>) null));
     }
 
 }

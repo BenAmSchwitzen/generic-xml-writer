@@ -1,6 +1,8 @@
 package org.benschwi;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -15,7 +17,7 @@ import java.util.function.Function;
  * @param <A> the type of the source object
  * @param <B> the type of the elements in the collection extracted by the valueExtractor function
  */
-public record XmlCollectionField<A, B>(String name, String elementName, Function<A, Collection<B>> valueExtractor, XmlNode<B>...childFields) implements XmlNode<A> {
+public record XmlCollectionField<A, B>(String name, String elementName, Function<A, Collection<B>> valueExtractor, List<XmlAttribute<A>> attributes, XmlNode<B>...childFields) implements XmlNode<A> {
 
     @SafeVarargs
     public XmlCollectionField {
@@ -30,8 +32,19 @@ public record XmlCollectionField<A, B>(String name, String elementName, Function
         }
     }
 
+    @SafeVarargs
+    public XmlCollectionField(String name, String elementName, Function<A, Collection<B>> valueExtractor, XmlNode<B>...childFields) {
+        this(name, elementName, valueExtractor, new ArrayList<>(), childFields);
+    }
+
     public boolean hasChildFields() {
         return childFields != null && childFields.length > 0;
+    }
+
+    @Override
+    public XmlCollectionField<A, B> setAttribute(String name, Function<A, ?> valueExtractor) {
+        attributes.add(new XmlAttribute<>(name, valueExtractor));
+        return this;
     }
 
 }

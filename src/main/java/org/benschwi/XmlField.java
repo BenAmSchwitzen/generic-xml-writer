@@ -1,5 +1,7 @@
 package org.benschwi;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -14,7 +16,7 @@ import java.util.function.Function;
  * @param <A> the type of the source object
  * @param <B> the type of the value extracted by the valueExtractor function
  */
-public record XmlField<A, B>(String name, Function<A, B> valueExtractor, NullBehavior nullBehavior, XmlNode<B>...childFields) implements XmlNode<A> {
+public record XmlField<A, B>(String name, Function<A, B> valueExtractor, NullBehavior nullBehavior, List<XmlAttribute<A>> attributes, XmlNode<B>...childFields) implements XmlNode<A> {
 
     @SafeVarargs
     public XmlField {
@@ -30,12 +32,23 @@ public record XmlField<A, B>(String name, Function<A, B> valueExtractor, NullBeh
     }
 
     @SafeVarargs
-    public XmlField(String name, Function<A, B> valueExtractor, XmlField<B, ?>...childFields) {
-        this(name, valueExtractor, NullBehavior.EMPTY_ELEMENT_VALUE, childFields);
+    public XmlField(String name, Function<A, B> valueExtractor, NullBehavior nullBehavior, XmlNode<B>...childFields) {
+        this(name, valueExtractor, nullBehavior, new ArrayList<>(), childFields);
+    }
+
+    @SafeVarargs
+    public XmlField(String name, Function<A, B> valueExtractor, XmlNode<B>...childFields) {
+        this(name, valueExtractor, NullBehavior.EMPTY_ELEMENT_VALUE, new ArrayList<>(), childFields);
     }
 
     public boolean hasChildFields() {
         return childFields != null && childFields.length > 0;
+    }
+
+    @Override
+    public XmlField<A, B> setAttribute(String name, Function<A, ?> valueExtractor) {
+        attributes.add(new XmlAttribute<>(name, valueExtractor));
+        return this;
     }
 
     /**
