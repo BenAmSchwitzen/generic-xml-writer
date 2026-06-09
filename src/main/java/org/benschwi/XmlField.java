@@ -32,7 +32,12 @@ public record XmlField<A, B>(String name, Function<A, B> valueExtractor, NullBeh
     }
 
     @SafeVarargs
-    public XmlField(String name, Function<A, B> valueExtractor, XmlField<B, ?>...childFields) {
+    public XmlField(String name, Function<A, B> valueExtractor, NullBehavior nullBehavior, XmlNode<B>...childFields) {
+        this(name, valueExtractor, nullBehavior, new ArrayList<>(), childFields);
+    }
+
+    @SafeVarargs
+    public XmlField(String name, Function<A, B> valueExtractor, XmlNode<B>...childFields) {
         this(name, valueExtractor, NullBehavior.EMPTY_ELEMENT_VALUE, new ArrayList<>(), childFields);
     }
 

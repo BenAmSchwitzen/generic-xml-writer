@@ -1,5 +1,6 @@
 package org.benschwi;
 
+import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -25,17 +26,17 @@ public class XmlFieldTest {
 
     @Test
     void testCreateXmlField_NullBehaviorIsNull() {
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlField<>("name", Dummy::name, (XmlField.NullBehavior)null));
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlField<Dummy, String>("name", Dummy::name, (XmlField.NullBehavior) null, (XmlNode<String>) null));
     }
 
     @Test
     void testCreateXmlField_childFieldsIsNull() {
-        assertThatNoException().isThrownBy(() -> new XmlField<>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION, (XmlField<String, ?>[]) null));
+        assertThatNoException().isThrownBy(() -> new XmlField<>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION, (XmlNode<String>[]) null));
     }
 
     @Test
     void testCreateXmlField_childFieldsArrayContainsAtLeastOneNullElement() {
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlField<Dummy, String>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION, (XmlField<String, ?>) null));
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> new XmlField<Dummy, String>("name", Dummy::name, XmlField.NullBehavior.THROW_EXCEPTION, (XmlNode<String>) null));
     }
 
     @Test
